@@ -66,18 +66,23 @@ export function SlidePreview({ projectId, slide, assets, templateFamily, classNa
         }
 
         if (element.kind === "text") {
+          const previewFontSize = adjustPreviewFontSize(element.text, element.fontSize, element.w, element.h);
           return (
             <div
               key={element.id}
               style={{
                 ...common,
                 color: element.color,
-                fontSize: `${element.fontSize}px`,
+                fontSize: `${previewFontSize}px`,
                 fontWeight: element.fontWeight || 400,
-                lineHeight: 1.18,
+                fontFamily: resolved.family.fontBody,
+                lineHeight: 1.14,
                 textAlign: element.align || "left",
                 whiteSpace: "pre-wrap",
-                overflow: "hidden"
+                overflow: "hidden",
+                wordBreak: "break-word",
+                display: "flex",
+                alignItems: "flex-start"
               }}
             >
               {element.text}
@@ -107,4 +112,14 @@ export function SlidePreview({ projectId, slide, assets, templateFamily, classNa
       })}
     </div>
   );
+}
+
+function adjustPreviewFontSize(text: string, fontSize: number, width: number, height: number) {
+  const area = Math.max(0.02, width * height);
+  const density = text.length / (area * 120);
+
+  if (density > 1.7) return Math.max(10, Math.round(fontSize * 0.68));
+  if (density > 1.25) return Math.max(11, Math.round(fontSize * 0.82));
+  if (density > 1.0) return Math.max(12, Math.round(fontSize * 0.92));
+  return fontSize;
 }

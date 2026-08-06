@@ -9,7 +9,15 @@ export async function POST(_: Request, { params }: { params: Promise<{ presentat
   if (!project.brief || !project.outline.length) {
     return NextResponse.json({ error: { code: "OUTLINE_REQUIRED", message: "Generate an outline first.", requestId: crypto.randomUUID() } }, { status: 400 });
   }
-  const slides = await generateSlides(project.brief, project.outline, project.assets, project.templateFamily, settings);
+  const selectedTheme = project.themeConcepts.find((item) => item.id === project.selectedThemeConceptId) || null;
+  const slides = await generateSlides(
+    project.brief,
+    project.outline,
+    project.assets,
+    selectedTheme?.templateFamily || project.templateFamily,
+    settings,
+    selectedTheme
+  );
   const saved = await saveSlides(presentationId, slides, "Generated slide deck");
   return NextResponse.json({ data: saved, meta: { requestId: crypto.randomUUID() } });
 }

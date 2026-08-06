@@ -3,21 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, useRef, useState } from "react";
-import type { ProjectRecord, TemplateFamilyId } from "@/lib/schema";
-
-const families: { id: TemplateFamilyId; label: string }[] = [
-  { id: "human-centered-sales", label: "Human-Centered Sales" },
-  { id: "blue-architectural", label: "Blue Architectural" },
-  { id: "editorial-signal", label: "Editorial Signal" },
-  { id: "strategic-frameworks", label: "Strategic Frameworks" }
-];
+import type { ProjectRecord } from "@/lib/schema";
 
 export function DashboardClient({ projects }: { projects: ProjectRecord[] }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [title, setTitle] = useState("Kalpa ERP strategy deck");
   const [description, setDescription] = useState("");
-  const [templateFamily, setTemplateFamily] = useState<TemplateFamilyId>("human-centered-sales");
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +21,7 @@ export function DashboardClient({ projects }: { projects: ProjectRecord[] }) {
       const response = await fetch("/api/v1/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description, templateFamily })
+        body: JSON.stringify({ title, description })
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error?.message || "Failed to create project");
@@ -98,13 +90,6 @@ export function DashboardClient({ projects }: { projects: ProjectRecord[] }) {
           <div className="grid gap-3">
             <input className="rounded-2xl border border-white/12 bg-white/90 px-4 py-3 text-sm text-slate-900" value={title} onChange={(event) => setTitle(event.target.value)} />
             <textarea className="min-h-24 rounded-2xl border border-white/12 bg-white/90 px-4 py-3 text-sm text-slate-900" value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Optional internal note" />
-            <select className="rounded-2xl border border-white/12 bg-white/90 px-4 py-3 text-sm text-slate-900" value={templateFamily} onChange={(event) => setTemplateFamily(event.target.value as TemplateFamilyId)}>
-              {families.map((family) => (
-                <option key={family.id} value={family.id}>
-                  {family.label}
-                </option>
-              ))}
-            </select>
             <div className="rounded-[22px] border border-dashed border-white/30 bg-white/8 p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>

@@ -55,6 +55,55 @@ export const outlineJsonSchema = {
   }
 } as const;
 
+export const themeConceptsJsonSchema = {
+  name: "theme_concepts",
+  strict: true,
+  schema: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      themeConcepts: {
+        type: "array",
+        minItems: 3,
+        maxItems: 3,
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            id: { type: "string" },
+            name: { type: "string" },
+            summary: { type: "string" },
+            rationale: { type: "string" },
+            keywords: {
+              type: "array",
+              items: { type: "string" },
+              minItems: 2,
+              maxItems: 4
+            },
+            swatches: {
+              type: "array",
+              items: { type: "string" },
+              minItems: 3,
+              maxItems: 4
+            },
+            templateFamily: {
+              type: "string",
+              enum: [
+                "blue-architectural",
+                "editorial-signal",
+                "strategic-frameworks",
+                "human-centered-sales"
+              ]
+            }
+          },
+          required: ["id", "name", "summary", "rationale", "keywords", "swatches", "templateFamily"]
+        }
+      }
+    },
+    required: ["themeConcepts"]
+  }
+} as const;
+
 export const slidesJsonSchema = {
   name: "presentation_slides",
   strict: true,

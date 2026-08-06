@@ -1,8 +1,16 @@
 import { z } from "zod";
 import { getOpenAIClient } from "@/lib/ai/client";
-import { outlineJsonSchema, questionsJsonSchema, slidesJsonSchema } from "@/lib/ai/schemas";
-import type { AdminSettings, AssetRecord, BriefInput, OutlineItem, SlideContent, TemplateFamilyId } from "@/lib/schema";
-import { outlineItemSchema, questionSchema, slideContentSchema } from "@/lib/schema";
+import { outlineJsonSchema, questionsJsonSchema, slidesJsonSchema, themeConceptsJsonSchema } from "@/lib/ai/schemas";
+import type {
+  AdminSettings,
+  AssetRecord,
+  BriefInput,
+  OutlineItem,
+  SlideContent,
+  TemplateFamilyId,
+  ThemeConcept
+} from "@/lib/schema";
+import { outlineItemSchema, questionSchema, slideContentSchema, themeConceptSchema } from "@/lib/schema";
 
 function composeAssetContext(assets: AssetRecord[]) {
   return assets
@@ -100,11 +108,10 @@ export async function generateOutline(
   return parsed.outline as OutlineItem[];
 }
 
-export async function generateSlides(
+export async function generateThemeConcepts(
   brief: BriefInput,
-  outline: OutlineItem[],
   assets: AssetRecord[],
-  templateFamily: TemplateFamilyId,
+  outline: OutlineItem[],
   settings: AdminSettings
 ) {
   const client = getOpenAIClient();
@@ -117,7 +124,7 @@ export async function generateSlides(
           {
             type: "input_text",
             text:
-              `${settings.systemPrompt}\nFollow the template family exactly: ${templateFamily}.\nRespect banned words: ${settings.bannedWords.join(", ")}.\nWriting rules: ${settings.writingRules.join(" | ")}.\nOnly use imageAssetIds from the provided asset list.`
+              `${settings.systemPrompt}\nCreate exactly three distinct but Kalpa-aligned visual theme directions. Each direction must still feel credible for executive ERP and operations storytelling.`
           }
         ]
       },
@@ -127,7 +134,52 @@ export async function generateSlides(
           {
             type: "input_text",
             text:
-              `Turn this approved outline into presentation slides.\n\nBrief:\n${JSON.stringify(brief, null, 2)}\n\nOutline:\n${JSON.stringify(outline, null, 2)}\n\nAvailable assets:\n${JSON.stringify(
+              `Create 3 theme options for this presentation.\n\nBrief:\n${JSON.stringify(brief, null, 2)}\n\nOutline:\n${JSON.stringify(outline, null, 2)}\n\nSource context:\n${composeAssetContext(assets)}\n\nFor each option, choose one templateFamily enum that best matches the direction, provide a short name, a one-sentence summary, a rationale, 2-4 theme keywords, and 3-4 swatch hex colors that stay within a Kalpa-safe palette.`
+          }
+        ]
+      }
+    ],
+    text: {
+      format: {
+        type: "json_schema",
+        ...themeConceptsJsonSchema
+      }
+    }
+  });
+
+  const parsed = await parseStructuredJson(response, z.object({ themeConcepts: z.array(themeConceptSchema).length(3) }));
+  return parsed.themeConcepts as ThemeConcept[];
+}
+
+export async function generateSlides(
+  brief: BriefInput,
+  outline: OutlineItem[],
+  assets: AssetRecord[],
+  templateFamily: TemplateFamilyId,
+  settings: AdminSettings,
+  themeConcept?: ThemeConcept | null
+) {
+  const client = getOpenAIClient();
+  const response = await client.responses.create({
+    model: process.env.OPENAI_MODEL || "gpt-5",
+    input: [
+      {
+        role: "system",
+        content: [
+          {
+            type: "input_text",
+            text:
+              `${settings.systemPrompt}\nFollow the template family exactly: ${templateFamily}.\nRespect banned words: ${settings.bannedWords.join(", ")}.\nWriting rules: ${settings.writingRules.join(" | ")}.\nOnly use imageAssetIds from the provided asset list.\nIf a theme concept is provided, reflect its tone, emphasis, and palette sensibility in the slide content and structure choices.`
+          }
+        ]
+      },
+      {
+        role: "user",
+        content: [
+          {
+            type: "input_text",
+            text:
+              `Turn this approved outline into presentation slides.\n\nBrief:\n${JSON.stringify(brief, null, 2)}\n\nSelected theme concept:\n${JSON.stringify(themeConcept || null, null, 2)}\n\nOutline:\n${JSON.stringify(outline, null, 2)}\n\nAvailable assets:\n${JSON.stringify(
                 assets.map((asset) => ({ id: asset.id, name: asset.name, mimeType: asset.mimeType })),
                 null,
                 2
@@ -146,6 +198,51 @@ export async function generateSlides(
 
   const parsed = await parseStructuredJson(response, z.object({ slides: z.array(slideContentSchema) }));
   return parsed.slides as SlideContent[];
+}
+
+export async function editOutline(
+  brief: BriefInput,
+  outline: OutlineItem[],
+  assets: AssetRecord[],
+  instruction: string,
+  targetOutlineId: string | null,
+  settings: AdminSettings
+) {
+  const client = getOpenAIClient();
+  const response = await client.responses.create({
+    model: process.env.OPENAI_MODEL || "gpt-5",
+    input: [
+      {
+        role: "system",
+        content: [
+          {
+            type: "input_text",
+            text:
+              `${settings.systemPrompt}\nRevise only the requested outline scope. Preserve unaffected outline items. Return the full ordered outline array.`
+          }
+        ]
+      },
+      {
+        role: "user",
+        content: [
+          {
+            type: "input_text",
+            text:
+              `Edit this presentation outline.\n\nBrief:\n${JSON.stringify(brief, null, 2)}\n\nInstruction: ${instruction}\n\nTarget outline ID: ${targetOutlineId || "all"}\n\nCurrent outline:\n${JSON.stringify(outline, null, 2)}\n\nSource context:\n${composeAssetContext(assets)}`
+          }
+        ]
+      }
+    ],
+    text: {
+      format: {
+        type: "json_schema",
+        ...outlineJsonSchema
+      }
+    }
+  });
+
+  const parsed = await parseStructuredJson(response, z.object({ outline: z.array(outlineItemSchema) }));
+  return parsed.outline as OutlineItem[];
 }
 
 export async function editSlides(

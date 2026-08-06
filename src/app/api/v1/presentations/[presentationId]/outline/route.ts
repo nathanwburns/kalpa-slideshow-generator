@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { generateOutline } from "@/lib/ai/generator";
+import { generateOutline, generateThemeConcepts } from "@/lib/ai/generator";
 import { saveOutline } from "@/lib/data/project-service";
 import { getAdminSettings, getProject } from "@/lib/data/storage";
 
@@ -16,6 +16,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ pre
     assumption: question.assumption
   }));
   const outline = await generateOutline(project.brief, project.assets, answeredQuestions, settings);
-  const saved = await saveOutline(presentationId, outline);
+  const themeConcepts = await generateThemeConcepts(project.brief, project.assets, outline, settings);
+  const selectedTheme = themeConcepts[0] || null;
+  const saved = await saveOutline(presentationId, outline, {
+    label: "Generated outline and theme directions",
+    themeConcepts,
+    selectedThemeConceptId: selectedTheme?.id || null,
+    templateFamily: selectedTheme?.templateFamily || project.templateFamily
+  });
   return NextResponse.json({ data: saved, meta: { requestId: crypto.randomUUID() } });
 }

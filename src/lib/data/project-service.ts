@@ -1,6 +1,15 @@
 import path from "path";
 import fs from "fs/promises";
-import { briefSchema, type AssetRecord, type BriefInput, type ProjectRecord, type SlideContent, type TemplateFamilyId } from "@/lib/schema";
+import {
+  briefSchema,
+  type AssetRecord,
+  type BriefInput,
+  type OutlineItem,
+  type ProjectRecord,
+  type SlideContent,
+  type TemplateFamilyId,
+  type ThemeConcept
+} from "@/lib/schema";
 import { createId, ensureProjectFilesDir, getProject, saveProject } from "@/lib/data/storage";
 import { extractTextFromFile } from "@/lib/files/extract";
 import { slugify } from "@/lib/utils";
@@ -25,6 +34,8 @@ export function createProjectRecord(input: {
     outline: [],
     slides: [],
     assets: [],
+    themeConcepts: [],
+    selectedThemeConceptId: null,
     revisions: []
   };
 }
@@ -85,11 +96,29 @@ export async function saveQuestions(projectId: string, questions: ProjectRecord[
   return saveProject(project);
 }
 
-export async function saveOutline(projectId: string, outline: ProjectRecord["outline"]) {
+export async function saveOutline(
+  projectId: string,
+  outline: OutlineItem[],
+  options?: {
+    label?: string;
+    themeConcepts?: ThemeConcept[];
+    selectedThemeConceptId?: string | null;
+    templateFamily?: TemplateFamilyId;
+  }
+) {
   const project = await getProject(projectId);
   project.outline = outline;
   project.status = "outline";
-  stampRevision(project, "Generated outline");
+  if (options?.themeConcepts) {
+    project.themeConcepts = options.themeConcepts;
+  }
+  if (options?.selectedThemeConceptId !== undefined) {
+    project.selectedThemeConceptId = options.selectedThemeConceptId;
+  }
+  if (options?.templateFamily) {
+    project.templateFamily = options.templateFamily;
+  }
+  stampRevision(project, options?.label || "Generated outline");
   return saveProject(project);
 }
 

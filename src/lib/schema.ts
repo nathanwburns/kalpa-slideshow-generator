@@ -92,6 +92,16 @@ export const adminSettingsSchema = z.object({
   preferredTemplateFamily: templateFamilySchema
 });
 
+export const themeConceptSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  summary: z.string(),
+  rationale: z.string(),
+  keywords: z.array(z.string()).default([]),
+  swatches: z.array(z.string()).default([]),
+  templateFamily: templateFamilySchema
+});
+
 export const projectSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -105,6 +115,8 @@ export const projectSchema = z.object({
   outline: z.array(outlineItemSchema),
   slides: z.array(slideContentSchema),
   assets: z.array(assetSchema),
+  themeConcepts: z.array(themeConceptSchema).default([]),
+  selectedThemeConceptId: z.string().nullable().default(null),
   revisions: z.array(z.object({
     id: z.string(),
     label: z.string(),
@@ -119,3 +131,4 @@ export type OutlineItem = z.infer<typeof outlineItemSchema>;
 export type ProjectRecord = z.infer<typeof projectSchema>;
 export type SlideContent = z.infer<typeof slideContentSchema>;
 export type TemplateFamilyId = z.infer<typeof templateFamilySchema>;
+export type ThemeConcept = z.infer<typeof themeConceptSchema>;

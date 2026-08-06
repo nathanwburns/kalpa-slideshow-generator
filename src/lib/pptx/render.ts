@@ -58,7 +58,9 @@ export async function renderProjectPptx(project: ProjectRecord) {
           bold: element.fontWeight ? element.fontWeight >= 700 : false,
           color: element.color.replace("#", ""),
           align: element.align,
-          margin: 0
+          margin: 0,
+          fit: "shrink",
+          valign: "top"
         });
       }
 
