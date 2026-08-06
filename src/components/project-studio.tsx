@@ -135,11 +135,57 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
         <section className="grid gap-6">
           <div className="rounded-[28px] bg-white/85 p-6 shadow-panel">
             <div className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Brief</div>
-            <div className="grid gap-3">
-              <textarea className="min-h-36 rounded-2xl border border-slate-200 px-4 py-3 text-sm" value={brief} onChange={(event) => setBrief(event.target.value)} placeholder="What deck are you trying to create, for whom, and what should they believe or do after seeing it?" />
-              <input className="rounded-2xl border border-slate-200 px-4 py-3 text-sm" value={audience} onChange={(event) => setAudience(event.target.value)} placeholder="Audience" />
-              <input className="rounded-2xl border border-slate-200 px-4 py-3 text-sm" value={outcome} onChange={(event) => setOutcome(event.target.value)} placeholder="Desired outcome" />
-              <input className="rounded-2xl border border-slate-200 px-4 py-3 text-sm" type="number" min={4} max={14} value={slideCount} onChange={(event) => setSlideCount(Number(event.target.value || 8))} />
+            <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              Include the presentation goal, what the audience should understand or do after the deck, important context or constraints,
+              proof points or source material to lean on, preferred tone, and how long the deck should be.
+            </div>
+            <div className="grid gap-4">
+              <label className="grid gap-2">
+                <span className="text-sm font-semibold text-slate-900">Deck brief</span>
+                <textarea
+                  className="min-h-40 rounded-2xl border border-slate-200 px-4 py-3 text-sm"
+                  value={brief}
+                  onChange={(event) => setBrief(event.target.value)}
+                  placeholder="Example: Create a 10-slide Kalpa sales deck for a manufacturing prospect. Explain the operational pain, show why Kalpa's human-centered ERP approach is different, use uploaded case-study evidence, and end with a clear next-step CTA. Keep the tone executive, confident, and concrete."
+                />
+                <span className="text-xs text-slate-500">This is the main instruction the AI will use to shape the deck.</span>
+              </label>
+
+              <label className="grid gap-2">
+                <span className="text-sm font-semibold text-slate-900">Audience or audience website</span>
+                <input
+                  className="rounded-2xl border border-slate-200 px-4 py-3 text-sm"
+                  value={audience}
+                  onChange={(event) => setAudience(event.target.value)}
+                  placeholder="Example: COO at a multi-site manufacturer, or https://targetcompany.com"
+                />
+                <span className="text-xs text-slate-500">Use this to describe who the deck is for. You can paste a URL, but the app does not crawl the website yet.</span>
+              </label>
+
+              <label className="grid gap-2">
+                <span className="text-sm font-semibold text-slate-900">Desired outcome</span>
+                <input
+                  className="rounded-2xl border border-slate-200 px-4 py-3 text-sm"
+                  value={outcome}
+                  onChange={(event) => setOutcome(event.target.value)}
+                  placeholder="Example: Book a discovery call, win internal approval, or align the client on the rollout plan"
+                />
+                <span className="text-xs text-slate-500">This tells the AI what the deck should persuade the audience to believe, approve, or do.</span>
+              </label>
+
+              <label className="grid gap-2">
+                <span className="text-sm font-semibold text-slate-900">Requested slide count</span>
+                <input
+                  className="rounded-2xl border border-slate-200 px-4 py-3 text-sm"
+                  type="number"
+                  min={4}
+                  max={14}
+                  value={slideCount}
+                  onChange={(event) => setSlideCount(Number(event.target.value || 8))}
+                />
+                <span className="text-xs text-slate-500">This is how many slides the outline and generated deck should target.</span>
+              </label>
+
               <button className="rounded-2xl bg-kalpa-blue px-4 py-3 text-sm font-semibold text-white" onClick={saveBrief} disabled={busy !== null}>
                 {busy === "brief" ? "Saving…" : "Save brief"}
               </button>
