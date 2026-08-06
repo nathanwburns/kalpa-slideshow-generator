@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "HOSTNAME=0.0.0.0 node .next/standalone/server.js",
+    "start": "next start -H 0.0.0.0 -p ${PORT:-3000}",
     "lint": "ESLINT_USE_FLAT_CONFIG=false eslint src tests --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
