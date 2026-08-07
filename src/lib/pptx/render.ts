@@ -32,7 +32,10 @@ export async function renderProjectPptx(project: ProjectRecord) {
           w,
           h,
           rectRadius: element.radius ? 0.08 : undefined,
-          fill: { color: element.fill.startsWith("#") ? element.fill.replace("#", "") : undefined, transparency: element.fill.startsWith("rgba") ? 35 : 0 },
+          fill: {
+            color: (element.solidFill || (element.fill.startsWith("#") ? element.fill : theme.panelSolid)).replace("#", ""),
+            transparency: element.fill.startsWith("rgba") ? 16 : 0
+          },
           line: { color: (element.stroke || theme.line).replace("#", ""), width: element.strokeWidth || 0 }
         });
       }
@@ -53,7 +56,7 @@ export async function renderProjectPptx(project: ProjectRecord) {
           y,
           w,
           h,
-          fontFace: theme.fontBody,
+          fontFace: element.fontFace || theme.fontBody,
           fontSize: element.fontSize,
           bold: element.fontWeight ? element.fontWeight >= 700 : false,
           color: element.color.replace("#", ""),

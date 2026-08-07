@@ -14,6 +14,7 @@ export type RenderElement =
       text: string;
       fontSize: number;
       fontWeight?: number;
+      fontFace?: string;
       color: string;
       align?: "left" | "center" | "right";
       opacity?: number;
@@ -26,6 +27,7 @@ export type RenderElement =
       w: number;
       h: number;
       fill: string;
+      solidFill?: string;
       radius?: number;
       stroke?: string;
       strokeWidth?: number;
@@ -65,9 +67,12 @@ function assetPath(assetId: string, assets: AssetRecord[]) {
 
 function baseFrame(family: FamilyTheme): RenderElement[] {
   return [
-    { kind: "shape", id: "bg", x: 0, y: 0, w: 1, h: 1, fill: family.canvas },
-    { kind: "shape", id: "panel", x: 0.05, y: 0.06, w: 0.9, h: 0.88, fill: family.panel, radius: 22 },
-    { kind: "line", id: "bar", x: 0.05, y: 0.13, w: 0.008, h: 0.66, color: family.accent, strokeWidth: 0 }
+    { kind: "shape", id: "bg", x: 0, y: 0, w: 1, h: 1, fill: family.canvas, solidFill: family.canvasSolid },
+    { kind: "shape", id: "panel", x: 0.045, y: 0.055, w: 0.91, h: 0.89, fill: family.panel, solidFill: family.panelSolid, radius: 24, stroke: family.frame, strokeWidth: 1 },
+    { kind: "shape", id: "frame-top", x: 0.074, y: 0.1, w: 0.23, h: 0.018, fill: family.edge, solidFill: family.panelSolid },
+    { kind: "shape", id: "frame-right", x: 0.905, y: 0.12, w: 0.018, h: 0.18, fill: family.edge, solidFill: family.panelSolid },
+    { kind: "line", id: "bar", x: 0.072, y: 0.14, w: 0.008, h: 0.68, color: family.accent, strokeWidth: 0 },
+    { kind: "shape", id: "signal-diamond", x: 0.835, y: 0.116, w: 0.04, h: 0.07, fill: family.signal, solidFill: family.signal, radius: 8 }
   ];
 }
 
@@ -81,38 +86,41 @@ export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, as
       elements.push({
         kind: "text",
         id: "eyebrow",
-        x: 0.1,
+        x: 0.11,
         y: 0.12,
         w: 0.48,
         h: 0.05,
         text: slide.eyebrow,
         fontSize: 14,
         fontWeight: 700,
+        fontFace: family.fontDisplay,
         color: family.accent
       });
     }
     elements.push({
       kind: "text",
       id: "headline",
-      x: 0.1,
+      x: 0.11,
       y: 0.18,
-      w: slide.layoutKind === "hero" ? 0.44 : 0.78,
+      w: slide.layoutKind === "hero" ? 0.42 : 0.74,
       h: 0.18,
       text: slide.headline,
-      fontSize: slide.layoutKind === "hero" ? 29 : 24,
+      fontSize: slide.layoutKind === "hero" ? 28 : 23,
       fontWeight: 800,
+      fontFace: family.fontDisplay,
       color: family.ink
     });
     if (slide.subheadline) {
       elements.push({
         kind: "text",
         id: "subheadline",
-        x: 0.1,
-        y: 0.34,
-        w: slide.layoutKind === "hero" ? 0.42 : 0.76,
+        x: 0.11,
+        y: 0.35,
+        w: slide.layoutKind === "hero" ? 0.4 : 0.7,
         h: 0.12,
         text: slide.subheadline,
-        fontSize: 14,
+        fontSize: 13,
+        fontFace: family.fontBody,
         color: family.muted
       });
     }
@@ -124,27 +132,28 @@ export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, as
       elements.push({
         kind: "image",
         id: "hero-image",
-        x: 0.58,
+        x: 0.6,
         y: 0.16,
-        w: 0.28,
-        h: 0.46,
+        w: 0.27,
+        h: 0.48,
         src: imagePath,
         assetId: slide.imageAssetIds[0],
         radius: 18
       });
     } else {
-      elements.push({ kind: "shape", id: "hero-art", x: 0.58, y: 0.16, w: 0.28, h: 0.46, fill: family.accentSoft, radius: 18 });
+      elements.push({ kind: "shape", id: "hero-art", x: 0.6, y: 0.16, w: 0.27, h: 0.48, fill: family.accentSoft, solidFill: family.cardSolid, stroke: family.frame, strokeWidth: 1, radius: 18 });
+      elements.push({ kind: "shape", id: "hero-art-tab", x: 0.805, y: 0.2, w: 0.05, h: 0.018, fill: family.signal, solidFill: family.signal, radius: 3 });
     }
     slide.bullets.slice(0, 3).forEach((bullet, index) => {
       elements.push({
         kind: "text",
         id: `bullet-${index}`,
-        x: 0.1,
+        x: 0.11,
         y: 0.52 + index * 0.07,
-        w: 0.42,
+        w: 0.41,
         h: 0.05,
         text: `• ${bullet}`,
-        fontSize: 13,
+        fontSize: 12,
         color: family.ink
       });
     });
@@ -159,24 +168,25 @@ export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, as
       elements.push({
         kind: "shape",
         id: `card-${index}`,
-        x: 0.1 + col * 0.38,
+        x: 0.11 + col * 0.35,
         y: 0.5 + row * 0.16,
-        w: 0.32,
-        h: 0.12,
+        w: 0.29,
+        h: 0.115,
         fill: family.card,
+        solidFill: family.cardSolid,
         radius: 18,
-        stroke: family.line,
+        stroke: family.frame,
         strokeWidth: 1
       });
       elements.push({
         kind: "text",
         id: `card-text-${index}`,
-        x: 0.12 + col * 0.38,
+        x: 0.13 + col * 0.35,
         y: 0.54 + row * 0.16,
-        w: 0.28,
+        w: 0.24,
         h: 0.05,
         text: item,
-        fontSize: 13,
+        fontSize: 12,
         color: family.ink
       });
     });
@@ -188,35 +198,49 @@ export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, as
       elements.push({
         kind: "shape",
         id: `stat-${index}`,
-        x: 0.1 + index * 0.25,
+        x: 0.11 + index * 0.24,
         y: 0.54,
-        w: 0.2,
+        w: 0.19,
         h: 0.2,
         fill: family.card,
+        solidFill: family.cardSolid,
         radius: 24
+      });
+      elements.push({
+        kind: "shape",
+        id: `stat-tab-${index}`,
+        x: 0.125 + index * 0.24,
+        y: 0.565,
+        w: 0.045,
+        h: 0.012,
+        fill: family.signal,
+        solidFill: family.signal,
+        radius: 3
       });
       elements.push({
         kind: "text",
         id: `stat-value-${index}`,
-        x: 0.12 + index * 0.25,
-        y: 0.58,
+        x: 0.125 + index * 0.24,
+        y: 0.595,
         w: 0.16,
         h: 0.06,
         text: stat.value,
-        fontSize: 26,
+        fontSize: 24,
         fontWeight: 800,
+        fontFace: family.fontDisplay,
         color: family.accent,
         align: "center"
       });
       elements.push({
         kind: "text",
         id: `stat-label-${index}`,
-        x: 0.12 + index * 0.25,
+        x: 0.125 + index * 0.24,
         y: 0.66,
         w: 0.16,
         h: 0.06,
         text: stat.label,
-        fontSize: 12,
+        fontSize: 11,
+        fontFace: family.fontBody,
         color: family.ink,
         align: "center"
       });
@@ -225,10 +249,10 @@ export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, as
 
   if (slide.layoutKind === "process") {
     addHeadline();
-    elements.push({ kind: "line", id: "process-line", x: 0.16, y: 0.63, w: 0.58, h: 0.003, color: family.accent, strokeWidth: 5 });
+    elements.push({ kind: "line", id: "process-line", x: 0.17, y: 0.63, w: 0.55, h: 0.003, color: family.accent, strokeWidth: 5 });
     slide.steps.slice(0, 4).forEach((step, index) => {
-      const x = 0.12 + index * 0.19;
-      elements.push({ kind: "shape", id: `step-node-${index}`, x, y: 0.58, w: 0.07, h: 0.1, fill: family.card, radius: 20 });
+      const x = 0.13 + index * 0.18;
+      elements.push({ kind: "shape", id: `step-node-${index}`, x, y: 0.58, w: 0.068, h: 0.1, fill: family.card, solidFill: family.cardSolid, stroke: family.frame, strokeWidth: 1, radius: 20 });
       elements.push({
         kind: "text",
         id: `step-number-${index}`,
@@ -250,7 +274,7 @@ export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, as
         w: 0.11,
         h: 0.09,
         text: step,
-        fontSize: 11,
+        fontSize: 10,
         color: family.ink,
         align: "center"
       });
@@ -259,19 +283,20 @@ export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, as
 
   if (slide.layoutKind === "comparison") {
     addHeadline();
-    elements.push({ kind: "shape", id: "left-col", x: 0.1, y: 0.52, w: 0.34, h: 0.26, fill: family.card, radius: 18 });
-    elements.push({ kind: "shape", id: "right-col", x: 0.5, y: 0.52, w: 0.34, h: 0.26, fill: family.accentSoft, radius: 18 });
-    elements.push({ kind: "text", id: "left-title", x: 0.13, y: 0.56, w: 0.28, h: 0.04, text: slide.leftColumnTitle, fontSize: 15, fontWeight: 700, color: family.ink });
-    elements.push({ kind: "text", id: "right-title", x: 0.53, y: 0.56, w: 0.28, h: 0.04, text: slide.rightColumnTitle, fontSize: 15, fontWeight: 700, color: family.ink });
+    elements.push({ kind: "shape", id: "left-col", x: 0.11, y: 0.52, w: 0.31, h: 0.26, fill: family.card, solidFill: family.cardSolid, stroke: family.frame, strokeWidth: 1, radius: 18 });
+    elements.push({ kind: "shape", id: "right-col", x: 0.47, y: 0.52, w: 0.31, h: 0.26, fill: family.accentSoft, solidFill: family.panelSolid, stroke: family.frame, strokeWidth: 1, radius: 18 });
+    elements.push({ kind: "text", id: "left-title", x: 0.14, y: 0.56, w: 0.24, h: 0.04, text: slide.leftColumnTitle, fontSize: 14, fontWeight: 700, color: family.ink });
+    elements.push({ kind: "text", id: "right-title", x: 0.5, y: 0.56, w: 0.24, h: 0.04, text: slide.rightColumnTitle, fontSize: 14, fontWeight: 700, color: family.ink });
     slide.leftColumnPoints.slice(0, 4).forEach((item, index) => {
-      elements.push({ kind: "text", id: `left-point-${index}`, x: 0.13, y: 0.62 + index * 0.05, w: 0.27, h: 0.04, text: `• ${item}`, fontSize: 12, color: family.ink });
+      elements.push({ kind: "text", id: `left-point-${index}`, x: 0.14, y: 0.62 + index * 0.05, w: 0.23, h: 0.04, text: `• ${item}`, fontSize: 11, color: family.ink });
     });
     slide.rightColumnPoints.slice(0, 4).forEach((item, index) => {
-      elements.push({ kind: "text", id: `right-point-${index}`, x: 0.53, y: 0.62 + index * 0.05, w: 0.27, h: 0.04, text: `• ${item}`, fontSize: 12, color: family.ink });
+      elements.push({ kind: "text", id: `right-point-${index}`, x: 0.5, y: 0.62 + index * 0.05, w: 0.23, h: 0.04, text: `• ${item}`, fontSize: 11, color: family.ink });
     });
   }
 
   if (slide.layoutKind === "quote") {
+    elements.push({ kind: "shape", id: "quote-mark", x: 0.18, y: 0.16, w: 0.06, h: 0.015, fill: family.signal, solidFill: family.signal, radius: 4 });
     elements.push({
       kind: "text",
       id: "quote",
@@ -280,7 +305,7 @@ export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, as
       w: 0.72,
       h: 0.28,
       text: `“${slide.quote || slide.headline}”`,
-      fontSize: 30,
+      fontSize: 28,
       fontWeight: 700,
       color: family.ink,
       align: "center"
@@ -294,7 +319,7 @@ export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, as
         w: 0.44,
         h: 0.06,
         text: slide.quoteAttribution,
-        fontSize: 13,
+        fontSize: 12,
         color: family.muted,
         align: "center"
       });
@@ -308,7 +333,7 @@ export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, as
         w: 0.56,
         h: 0.08,
         text: slide.subheadline,
-        fontSize: 12,
+        fontSize: 11,
         color: family.ink,
         align: "center"
       });
@@ -319,17 +344,17 @@ export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, as
     elements.push({
       kind: "text",
       id: "cta-headline",
-      x: 0.16,
+      x: 0.18,
       y: 0.24,
-      w: 0.68,
+      w: 0.64,
       h: 0.15,
       text: slide.headline,
-      fontSize: 30,
+      fontSize: 28,
       fontWeight: 800,
       color: family.ink,
       align: "center"
     });
-    elements.push({ kind: "shape", id: "cta-band", x: 0.24, y: 0.54, w: 0.52, h: 0.11, fill: family.accent, radius: 20 });
+    elements.push({ kind: "shape", id: "cta-band", x: 0.24, y: 0.54, w: 0.52, h: 0.11, fill: family.accent, solidFill: family.accent, radius: 20 });
     elements.push({
       kind: "text",
       id: "cta-text",
@@ -352,7 +377,7 @@ export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, as
         w: 0.52,
         h: 0.06,
         text: slide.ctaSubtext || slide.contactLine,
-        fontSize: 12,
+        fontSize: 11,
         color: family.ink,
         align: "center"
       });

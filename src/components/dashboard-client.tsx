@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, useRef, useState } from "react";
@@ -72,10 +73,21 @@ export function DashboardClient({ projects }: { projects: ProjectRecord[] }) {
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-10 px-6 py-8">
-      <header className="grid gap-4 rounded-[28px] bg-[linear-gradient(135deg,#041420_0%,#0a3558_58%,#0c69a3_100%)] p-8 text-white shadow-panel md:grid-cols-[1.2fr_0.8fr]">
-        <div>
-          <div className="mb-3 inline-flex rounded-full border border-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-white/70">
-            Kalpa Slideshow Generator
+      <header className="relative grid gap-4 overflow-hidden rounded-[32px] bg-[linear-gradient(135deg,#041420_0%,#0a3558_54%,#0c69a3_100%)] p-8 text-white shadow-panel md:grid-cols-[1.15fr_0.85fr]">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(127,188,222,0.24),transparent_26%),radial-gradient(circle_at_82%_14%,rgba(237,133,77,0.18),transparent_18%)]" />
+        <div className="pointer-events-none absolute right-10 top-8 hidden h-24 w-24 rounded-[28px] border border-white/12 bg-white/6 xl:block" />
+        <div className="pointer-events-none absolute bottom-10 right-20 hidden h-28 w-28 rotate-45 rounded-[24px] border border-white/12 bg-white/6 xl:block" />
+        <div className="relative">
+          <div className="mb-4 flex items-center gap-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-[20px] border border-white/14 bg-white/10 shadow-frame backdrop-blur-sm">
+              <Image src="/kalpa-logo.png" alt="Kalpa logo" width={46} height={46} priority />
+            </div>
+            <div>
+              <div className="inline-flex rounded-full border border-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-white/72">
+                Kalpa Slideshow Generator Tool
+              </div>
+              <div className="mt-2 text-sm font-medium text-white/72">Right-fit ERP storytelling, rendered as editable decks.</div>
+            </div>
           </div>
           <h1 className="max-w-3xl text-4xl font-extrabold tracking-tight">
             Build real Kalpa decks with live AI generation and editable PowerPoint export.
@@ -84,13 +96,34 @@ export function DashboardClient({ projects }: { projects: ProjectRecord[] }) {
             This build is optimized first for Kalpa sales and proposal workflows: brief, context uploads, outline generation,
             deck composition, slide-level editing, and PPTX export.
           </p>
+          <div className="mt-6 flex flex-wrap gap-2">
+            {["Brand-book guided AI", "Reference deck restyling", "Framed Kalpa layouts"].map((label) => (
+              <div key={label} className="rounded-full border border-white/18 bg-white/8 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/80">
+                {label}
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="rounded-[24px] bg-white/10 p-5">
-          <div className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-white/70">New project</div>
+        <div className="relative rounded-[28px] border border-white/12 bg-white/10 p-5 backdrop-blur-sm">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="text-sm font-semibold uppercase tracking-[0.18em] text-white/70">New project</div>
+            <div className="rounded-full border border-white/14 bg-white/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/72">
+              Live AI
+            </div>
+          </div>
           <div className="grid gap-3">
-            <input className="rounded-2xl border border-white/12 bg-white/90 px-4 py-3 text-sm text-slate-900" value={title} onChange={(event) => setTitle(event.target.value)} />
-            <textarea className="min-h-24 rounded-2xl border border-white/12 bg-white/90 px-4 py-3 text-sm text-slate-900" value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Optional internal note" />
-            <div className="rounded-[22px] border border-dashed border-white/30 bg-white/8 p-4">
+            <input
+              className="rounded-2xl border border-white/12 bg-white/92 px-4 py-3 text-sm text-slate-900"
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+            />
+            <textarea
+              className="min-h-24 rounded-2xl border border-white/12 bg-white/92 px-4 py-3 text-sm text-slate-900"
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              placeholder="Optional internal note"
+            />
+            <div className="rounded-[24px] border border-dashed border-white/24 bg-[linear-gradient(180deg,rgba(255,255,255,0.1),rgba(255,255,255,0.04))] p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <div className="text-sm font-semibold text-white">Reference files</div>
@@ -129,7 +162,7 @@ export function DashboardClient({ projects }: { projects: ProjectRecord[] }) {
                 </div>
               ) : (
                 <div className="mt-4 rounded-2xl border border-white/12 bg-black/10 px-4 py-3 text-sm text-white/72">
-                  Add a brief, a past proposal, or an existing PowerPoint you want the system to reinterpret in a new Kalpa layout.
+                  Add a brief, a past proposal, or an existing PowerPoint you want the system to reinterpret into a new Kalpa frame system.
                 </div>
               )}
             </div>

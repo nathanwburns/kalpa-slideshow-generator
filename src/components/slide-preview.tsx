@@ -75,7 +75,7 @@ export function SlidePreview({ projectId, slide, assets, templateFamily, classNa
                 color: element.color,
                 fontSize: `${previewFontSize}px`,
                 fontWeight: element.fontWeight || 400,
-                fontFamily: resolved.family.fontBody,
+                fontFamily: element.fontFace || resolved.family.fontBody,
                 lineHeight: 1.14,
                 textAlign: element.align || "left",
                 whiteSpace: "pre-wrap",

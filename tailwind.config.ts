@@ -11,15 +11,20 @@ const config: Config = {
           peach: "#ED854D",
           orange: "#FF8C00",
           support: "#7FBCDE",
-          paper: "#F4F4F4"
+          paper: "#F4F4F4",
+          mist: "#EAE7DF",
+          ink: "#102132",
+          frame: "#D9E2E8"
         }
       },
       fontFamily: {
+        display: ["Sora", "Inter", "system-ui", "sans-serif"],
         sans: ["Inter", "system-ui", "sans-serif"],
         mono: ["IBM Plex Mono", "monospace"]
       },
       boxShadow: {
-        panel: "0 24px 64px rgba(0, 26, 41, 0.18)"
+        panel: "0 18px 48px rgba(7, 30, 46, 0.10)",
+        frame: "0 8px 24px rgba(7, 30, 46, 0.06)"
       }
     }
   },

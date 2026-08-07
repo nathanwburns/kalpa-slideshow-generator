@@ -1,4 +1,6 @@
 import { z } from "zod";
+import fs from "fs/promises";
+import path from "path";
 import { getOpenAIClient } from "@/lib/ai/client";
 import { outlineJsonSchema, questionsJsonSchema, slidesJsonSchema, themeConceptsJsonSchema } from "@/lib/ai/schemas";
 import type {
@@ -11,6 +13,7 @@ import type {
   ThemeConcept
 } from "@/lib/schema";
 import { outlineItemSchema, questionSchema, slideContentSchema, themeConceptSchema } from "@/lib/schema";
+import { clipText } from "@/lib/utils";
 
 function composeAssetContext(assets: AssetRecord[]) {
   return assets
@@ -22,6 +25,20 @@ function composeAssetContext(assets: AssetRecord[]) {
     .slice(0, 18000);
 }
 
+async function loadBrandBookContext() {
+  try {
+    const filePath = path.join(process.cwd(), "docs", "kalpa-brand-book.md");
+    const raw = await fs.readFile(filePath, "utf8");
+    return clipText(raw, 14000);
+  } catch {
+    return "";
+  }
+}
+
+function composeBrandPrompt(brandBook: string) {
+  return brandBook ? `\n\nKalpa brand book:\n${brandBook}` : "";
+}
+
 async function parseStructuredJson<T>(response: any, schema: z.ZodType<T>) {
   const raw = response.output_text || response.output?.[0]?.content?.[0]?.text || "";
   return schema.parse(JSON.parse(raw));
@@ -29,6 +46,7 @@ async function parseStructuredJson<T>(response: any, schema: z.ZodType<T>) {
 
 export async function generateQuestions(brief: BriefInput, assets: AssetRecord[], settings: AdminSettings) {
   const client = getOpenAIClient();
+  const brandBook = await loadBrandBookContext();
   const response = await client.responses.create({
     model: process.env.OPENAI_MODEL || "gpt-5",
     input: [
@@ -38,7 +56,7 @@ export async function generateQuestions(brief: BriefInput, assets: AssetRecord[]
           {
             type: "input_text",
             text:
-              `${settings.systemPrompt}\nAsk no more than five clarifying questions. If something can be reasonably assumed, include that assumption.`
+              `${settings.systemPrompt}\nAsk no more than five clarifying questions. If something can be reasonably assumed, include that assumption.${composeBrandPrompt(brandBook)}`
           }
         ]
       },
@@ -72,6 +90,7 @@ export async function generateOutline(
   settings: AdminSettings
 ) {
   const client = getOpenAIClient();
+  const brandBook = await loadBrandBookContext();
   const response = await client.responses.create({
     model: process.env.OPENAI_MODEL || "gpt-5",
     input: [
@@ -81,7 +100,7 @@ export async function generateOutline(
           {
             type: "input_text",
             text:
-              `${settings.systemPrompt}\n${settings.salesDeckBias}\nBuild a credible, persuasive business presentation outline.`
+              `${settings.systemPrompt}\n${settings.salesDeckBias}\nBuild a credible, persuasive business presentation outline.${composeBrandPrompt(brandBook)}`
           }
         ]
       },
@@ -115,6 +134,7 @@ export async function generateThemeConcepts(
   settings: AdminSettings
 ) {
   const client = getOpenAIClient();
+  const brandBook = await loadBrandBookContext();
   const response = await client.responses.create({
     model: process.env.OPENAI_MODEL || "gpt-5",
     input: [
@@ -124,7 +144,7 @@ export async function generateThemeConcepts(
           {
             type: "input_text",
             text:
-              `${settings.systemPrompt}\nCreate exactly three distinct but Kalpa-aligned visual theme directions. Each direction must still feel credible for executive ERP and operations storytelling.`
+              `${settings.systemPrompt}\nCreate exactly three distinct but Kalpa-aligned visual theme directions. Each direction must still feel credible for executive ERP and operations storytelling.${composeBrandPrompt(brandBook)}`
           }
         ]
       },
@@ -160,6 +180,7 @@ export async function generateSlides(
   themeConcept?: ThemeConcept | null
 ) {
   const client = getOpenAIClient();
+  const brandBook = await loadBrandBookContext();
   const response = await client.responses.create({
     model: process.env.OPENAI_MODEL || "gpt-5",
     input: [
@@ -169,7 +190,7 @@ export async function generateSlides(
           {
             type: "input_text",
             text:
-              `${settings.systemPrompt}\nFollow the template family exactly: ${templateFamily}.\nRespect banned words: ${settings.bannedWords.join(", ")}.\nWriting rules: ${settings.writingRules.join(" | ")}.\nOnly use imageAssetIds from the provided asset list.\nIf a theme concept is provided, reflect its tone, emphasis, and palette sensibility in the slide content and structure choices.`
+              `${settings.systemPrompt}\nFollow the template family exactly: ${templateFamily}.\nRespect banned words: ${settings.bannedWords.join(", ")}.\nWriting rules: ${settings.writingRules.join(" | ")}.\nOnly use imageAssetIds from the provided asset list.\nIf a theme concept is provided, reflect its tone, emphasis, and palette sensibility in the slide content and structure choices.${composeBrandPrompt(brandBook)}`
           }
         ]
       },
@@ -209,6 +230,7 @@ export async function editOutline(
   settings: AdminSettings
 ) {
   const client = getOpenAIClient();
+  const brandBook = await loadBrandBookContext();
   const response = await client.responses.create({
     model: process.env.OPENAI_MODEL || "gpt-5",
     input: [
@@ -218,7 +240,7 @@ export async function editOutline(
           {
             type: "input_text",
             text:
-              `${settings.systemPrompt}\nRevise only the requested outline scope. Preserve unaffected outline items. Return the full ordered outline array.`
+              `${settings.systemPrompt}\nRevise only the requested outline scope. Preserve unaffected outline items. Return the full ordered outline array.${composeBrandPrompt(brandBook)}`
           }
         ]
       },
@@ -252,6 +274,7 @@ export async function editSlides(
   settings: AdminSettings
 ) {
   const client = getOpenAIClient();
+  const brandBook = await loadBrandBookContext();
   const response = await client.responses.create({
     model: process.env.OPENAI_MODEL || "gpt-5",
     input: [
@@ -261,7 +284,7 @@ export async function editSlides(
           {
             type: "input_text",
             text:
-              `${settings.systemPrompt}\nRevise only the requested scope. Preserve unaffected slides. Return the full slide array.`
+              `${settings.systemPrompt}\nRevise only the requested scope. Preserve unaffected slides. Return the full slide array.${composeBrandPrompt(brandBook)}`
           }
         ]
       },

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { SlidePreview } from "@/components/slide-preview";
 import { familyThemes } from "@/lib/templates/families";
@@ -268,11 +269,23 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[1500px] flex-col gap-6 px-6 py-8">
-      <header className="flex flex-wrap items-start justify-between gap-4 rounded-[28px] bg-white/85 p-6 shadow-panel">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">{project.status}</div>
-          <h1 className="text-3xl font-extrabold text-slate-950">{project.title}</h1>
-          <p className="mt-2 max-w-3xl text-sm text-slate-600">{project.description || "Real AI workflow for this project."}</p>
+      <header className="flex flex-wrap items-start justify-between gap-4 rounded-[32px] border border-white/70 bg-white/85 p-6 shadow-panel">
+        <div className="flex gap-4">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[20px] border border-kalpa-frame bg-[linear-gradient(180deg,#ffffff,#f5f6f7)] shadow-frame">
+            <Image src="/kalpa-logo.png" alt="Kalpa logo" width={44} height={44} priority />
+          </div>
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">{project.status}</div>
+            <h1 className="text-3xl font-extrabold text-slate-950">{project.title}</h1>
+            <p className="mt-2 max-w-3xl text-sm text-slate-600">{project.description || "Real AI workflow for this project."}</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {["Kalpa brand book loaded", "Theme-directed generation", "Editable PPTX export"].map((label) => (
+                <div key={label} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600">
+                  {label}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
         <div className="flex flex-wrap gap-3">
           <a className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700" href={`/api/v1/presentations/${project.id}/export/pptx`}>
@@ -350,6 +363,9 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
 
           <div className="rounded-[28px] bg-white/85 p-6 shadow-panel">
             <div className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Source files</div>
+            <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              Upload a current proposal, ERP documentation, website copy, or an existing PowerPoint you want remade in a new Kalpa style.
+            </div>
             <input className="block w-full rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm" type="file" multiple onChange={(event) => uploadFiles(event.target.files)} />
             <div className="mt-4 grid max-h-56 gap-2 overflow-auto pr-1 text-sm text-slate-600">
               {project.assets.length ? (
@@ -423,7 +439,7 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
                   return (
                     <button
                       key={theme.id}
-                      className={`grid items-center gap-4 rounded-[24px] border p-4 text-left transition ${selected ? "border-kalpa-blue bg-blue-50 shadow-sm" : "border-slate-200 bg-white hover:border-slate-300"}`}
+                      className={`grid items-center gap-4 rounded-[24px] border p-4 text-left transition ${selected ? "border-kalpa-blue bg-[linear-gradient(180deg,#eff8ff,#f8fbff)] shadow-sm" : "border-slate-200 bg-white hover:border-slate-300"}`}
                       onClick={() => selectTheme(theme)}
                       type="button"
                     >
@@ -602,7 +618,7 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
 
                 {activeSlide ? (
                   <>
-                    <div className="relative rounded-[28px] border border-slate-200 bg-slate-50 p-4">
+                    <div className="relative rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#f6f7f8,#eef2f5)] p-4">
                       <SlidePreview projectId={project.id} slide={activeSlide} assets={project.assets} templateFamily={project.templateFamily} />
                       <button
                         className="absolute left-7 top-1/2 -translate-y-1/2 rounded-full bg-white/95 px-4 py-3 text-sm font-semibold text-slate-900 shadow-lg ring-1 ring-slate-200"

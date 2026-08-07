@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Kalpa Slideshow Generator",
+  title: "Kalpa Slideshow Generator Tool",
   description: "Generate Kalpa-branded business decks with OpenAI and export editable PowerPoint files."
 };
 
