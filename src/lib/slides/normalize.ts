@@ -178,9 +178,13 @@ export function finalizeSlidesForRender(slides: SlideContent[], assets: AssetRec
     .sort((left, right) => imagePriority(left.slide) - imagePriority(right.slide) || left.index - right.index);
 
   candidateIndexes.forEach(({ index }, candidateIndex) => {
+    const imageAsset = imageAssets[candidateIndex];
+    if (!imageAsset) return;
     normalizedSlides[index] = {
       ...normalizedSlides[index],
-      imageAssetIds: [imageAssets[candidateIndex % imageAssets.length].id]
+      // Each generated or uploaded visual is used once by default. Repetition makes a
+      // generated deck feel templated; deliberate reuse can still be set per slide.
+      imageAssetIds: [imageAsset.id]
     };
   });
 
