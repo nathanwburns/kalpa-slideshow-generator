@@ -112,10 +112,28 @@ describe("schema validation", () => {
   });
 
   it("adds Kalpa's protected welcome and contact slides around generated content", () => {
-    const generated = withKalpaBookends([], "Northstar implementation plan", null);
+    const generated = withKalpaBookends([], "Northstar implementation plan", {
+      rawPrompt: "Create an executive assessment deck.",
+      type: "strategy",
+      audience: "Northstar leadership",
+      outcome: "Align on the assessment scope.",
+      context: "",
+      requestedSlideCount: 8
+    });
     expect(generated).toHaveLength(2);
-    expect(generated[0]).toMatchObject({ id: "kalpa-cover", layoutKind: "hero", headline: "Northstar implementation plan" });
+    expect(generated[0]).toMatchObject({ id: "kalpa-cover", layoutKind: "hero", headline: "Northstar implementation plan", eyebrow: "KALPA STRATEGY DECK", subheadline: "Prepared by Kalpa for Northstar leadership." });
     expect(generated[1]).toMatchObject({ id: "kalpa-contact", layoutKind: "cta", ctaSubtext: "sales@kalpainc.com" });
+  });
+
+  it("uses uncropped logos and simplified bookend treatments", () => {
+    const [cover, contact] = withKalpaBookends([], "Northstar plan", null);
+    const coverElements = resolveSlide(cover, "human-centered-sales", []).elements;
+    const contactElements = resolveSlide(contact, "human-centered-sales", []).elements;
+
+    expect(coverElements.find((element) => element.id === "cover-logo")).toMatchObject({ kind: "image", fit: "contain" });
+    expect(coverElements.some((element) => element.id === "brand" || element.id === "brand-rule")).toBe(false);
+    expect(contactElements.some((element) => element.id === "brand" || element.id === "brand-rule" || element.id === "eyebrow")).toBe(false);
+    expect(contactElements.find((element) => element.id === "cta-subtext")).toMatchObject({ kind: "text", fontSize: 18, fontWeight: 800, color: "#F26E57" });
   });
 
   it("uses an expanded rounded card surface for three-pillar slides", () => {

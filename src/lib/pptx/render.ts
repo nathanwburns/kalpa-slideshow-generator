@@ -91,7 +91,7 @@ export async function renderProjectPptx(project: ProjectRecord) {
           h,
           // Match the browser's object-fit: cover behavior so photos keep their
           // proportions and receive the same centered crop in the exported deck.
-          sizing: { type: "cover", x, y, w, h }
+          sizing: { type: element.fit || "cover", x, y, w, h }
         });
       }
     }

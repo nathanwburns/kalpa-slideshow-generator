@@ -23,6 +23,7 @@ export function SlidePreview({ projectId, slide, assets, templateFamily, classNa
         width: "100%",
         aspectRatio: "16 / 9",
         overflow: "hidden",
+        containerType: "inline-size",
         borderRadius: 20,
         background: "#d7e4ee",
         boxShadow: "0 20px 50px rgba(0, 26, 41, 0.18)"
@@ -74,9 +75,9 @@ export function SlidePreview({ projectId, slide, assets, templateFamily, classNa
               style={{
                 ...common,
                 color: element.color,
-                // The layout engine stores PowerPoint points. Browsers use CSS pixels,
-                // so convert at 96dpi rather than independently shrinking preview copy.
-                fontSize: `${element.fontSize * (96 / 72)}px`,
+                // A 13.333in PowerPoint slide maps to 1280px at 96dpi. Container
+                // units keep preview typography proportional at every carousel size.
+                fontSize: `${element.fontSize / 9.6}cqw`,
                 fontWeight: element.fontWeight || 400,
                 fontFamily: element.fontFace || resolved.family.fontBody,
                 lineHeight: element.fontWeight && element.fontWeight >= 700 ? 1.05 : 1.14,
@@ -107,7 +108,7 @@ export function SlidePreview({ projectId, slide, assets, templateFamily, classNa
                 borderRadius: element.radius ? `${element.radius}px` : undefined
               }}
             >
-              <Image src={url} alt="" fill unoptimized sizes="40vw" style={{ objectFit: "cover" }} />
+              <Image src={url} alt="" fill unoptimized sizes="40vw" style={{ objectFit: element.fit || "cover" }} />
             </div>
           );
         }

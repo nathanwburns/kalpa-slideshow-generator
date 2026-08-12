@@ -4,15 +4,34 @@ import { clipText } from "@/lib/utils";
 const coverId = "kalpa-cover";
 const closingId = "kalpa-contact";
 
+function coverLabel(brief: BriefInput | null) {
+  switch (brief?.type) {
+    case "sales":
+      return "KALPA SALES CONVERSATION";
+    case "strategy":
+      return "KALPA STRATEGY DECK";
+    case "project":
+      return "KALPA PROJECT PLAN";
+    case "proposal":
+      return "KALPA PROPOSAL";
+    default:
+      return "KALPA EXECUTIVE ASSESSMENT";
+  }
+}
+
 function coverSlide(projectTitle: string, brief: BriefInput | null): SlideContent {
   return {
     id: coverId,
     sequence: 1,
     purpose: "Kalpa welcome cover",
     layoutKind: "hero",
-    eyebrow: "KALPA INC. | IMPLEMENTATION",
+    eyebrow: coverLabel(brief),
     headline: clipText(projectTitle || "Implementation point of view", 72),
-    subheadline: brief?.outcome ? clipText(brief.outcome, 120) : "A tailored implementation point of view.",
+    subheadline: brief?.audience
+      ? clipText(`Prepared by Kalpa for ${brief.audience}.`, 120)
+      : brief?.outcome
+        ? clipText(brief.outcome, 120)
+        : "Prepared by Kalpa.",
     bullets: [], stats: [], steps: [], leftColumnTitle: "", leftColumnPoints: [], rightColumnTitle: "", rightColumnPoints: [],
     quote: "", quoteAttribution: "", ctaText: "", ctaSubtext: "", contactLine: "", imageAssetIds: [],
     notes: "System-generated Kalpa title slide."
@@ -25,7 +44,7 @@ function closingSlide(): SlideContent {
     sequence: 0,
     purpose: "Kalpa contact closing slide",
     layoutKind: "cta",
-    eyebrow: "KALPA INC. | IMPLEMENTATION",
+    eyebrow: "",
     headline: "Thank you",
     subheadline: "Build a more reliable path forward.",
     bullets: [], stats: [], steps: [], leftColumnTitle: "", leftColumnPoints: [], rightColumnTitle: "", rightColumnPoints: [],

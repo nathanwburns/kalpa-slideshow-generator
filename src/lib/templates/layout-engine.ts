@@ -7,7 +7,7 @@ export type RenderElement =
   | { kind: "text"; id: string; x: number; y: number; w: number; h: number; text: string; fontSize: number; fontWeight?: number; fontFace?: string; color: string; align?: "left" | "center" | "right"; opacity?: number }
   | { kind: "shape"; id: string; x: number; y: number; w: number; h: number; fill: string; solidFill?: string; radius?: number; stroke?: string; strokeWidth?: number; rotate?: number; variant?: "parallelogram" }
   | { kind: "line"; id: string; x: number; y: number; w: number; h: number; color: string; strokeWidth: number }
-  | { kind: "image"; id: string; x: number; y: number; w: number; h: number; src: string; assetId?: string; radius?: number };
+  | { kind: "image"; id: string; x: number; y: number; w: number; h: number; src: string; assetId?: string; radius?: number; fit?: "cover" | "contain" };
 
 export type ResolvedSlide = { slide: SlideContent; family: FamilyTheme; elements: RenderElement[] };
 
@@ -97,7 +97,7 @@ function addBrand(elements: RenderElement[], slide: SlideContent, family: Family
     elements.push({ kind: "text", id: "brand", x: 0.075, y: 0.075, w: 0.3, h: 0.024, text: "KALPA  |  IMPLEMENTATION", fontSize: 8, fontWeight: 800, fontFace: family.fontDisplay, color: "#FFFFFF" });
     elements.push({ kind: "line", id: "brand-rule", x: 0.075, y: 0.115, w: 0.085, h: 0.003, color: treatment.coral, strokeWidth: 2 });
   } else {
-    elements.push({ kind: "image", id: "kalpa-logo", x: 0.07, y: 0.065, w: 0.045, h: 0.09, src: "/kalpa-logo.png" });
+    elements.push({ kind: "image", id: "kalpa-logo", x: 0.07, y: 0.065, w: 0.045, h: 0.09, src: "/kalpa-logo.png", fit: "contain" });
     elements.push({ kind: "text", id: "brand", x: 0.13, y: 0.082, w: 0.32, h: 0.02, text: slide.eyebrow || "KALPA IMPLEMENTATION", fontSize: 8, fontWeight: 800, fontFace: family.fontDisplay, color: treatment.coral });
   }
 }
@@ -107,10 +107,10 @@ function addWireDiamond(elements: RenderElement[], id: string, x: number, y: num
   if (opacity < 1) elements.push({ kind: "shape", id: `${id}-inner`, x: x + size * 0.2, y: y + size * 0.2, w: size * 0.6, h: size * 0.6, fill: "rgba(0,0,0,0)", solidFill: treatment.dark ? kalpa.navy : kalpa.paper, stroke: treatment.line, strokeWidth: 1, rotate: 45 });
 }
 
-function addHeader(elements: RenderElement[], slide: SlideContent, family: FamilyTheme, treatment: Treatment, options?: { width?: number; y?: number; size?: number; subtitleY?: number }) {
+function addHeader(elements: RenderElement[], slide: SlideContent, family: FamilyTheme, treatment: Treatment, options?: { width?: number; y?: number; size?: number; subtitleY?: number; showEyebrow?: boolean }) {
   const titleY = options?.y ?? 0.22;
   const width = options?.width ?? 0.64;
-  if (slide.eyebrow && treatment.dark) {
+  if (slide.eyebrow && treatment.dark && options?.showEyebrow !== false) {
     elements.push({ kind: "text", id: "eyebrow", x: 0.075, y: 0.16, w: 0.55, h: 0.025, text: slide.eyebrow.toUpperCase(), fontSize: 9, fontWeight: 800, fontFace: family.fontDisplay, color: treatment.coral });
   }
   elements.push({ kind: "text", id: "headline", x: 0.075, y: titleY, w: width, h: 0.18, text: slide.headline, fontSize: options?.size ?? 28, fontWeight: 800, fontFace: family.fontDisplay, color: treatment.ink });
@@ -138,11 +138,11 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
   const imagePath = imageAssetId ? assetPath(imageAssetId, assets) : "";
   const elements: RenderElement[] = [];
   addBackground(elements, treatment);
-  addBrand(elements, slide, family, treatment);
+  if (slide.id !== "kalpa-cover" && slide.id !== "kalpa-contact") addBrand(elements, slide, family, treatment);
 
   if (slide.id === "kalpa-cover") {
-    elements.push({ kind: "image", id: "cover-logo", x: 0.075, y: 0.15, w: 0.08, h: 0.16, src: "/kalpa-logo.png" });
-    elements.push({ kind: "text", id: "cover-overline", x: 0.075, y: 0.35, w: 0.44, h: 0.025, text: "A KALPA IMPLEMENTATION POINT OF VIEW", fontSize: 9, fontWeight: 800, fontFace: family.fontDisplay, color: treatment.coral });
+    elements.push({ kind: "image", id: "cover-logo", x: 0.075, y: 0.15, w: 0.08, h: 0.16, src: "/kalpa-logo.png", fit: "contain" });
+    elements.push({ kind: "text", id: "cover-overline", x: 0.075, y: 0.35, w: 0.44, h: 0.025, text: slide.eyebrow, fontSize: 9, fontWeight: 800, fontFace: family.fontDisplay, color: treatment.coral });
     elements.push({ kind: "text", id: "cover-title", x: 0.075, y: 0.42, w: 0.58, h: 0.22, text: slide.headline, fontSize: fitFont(slide.headline, 40, 27, 30), fontWeight: 800, fontFace: family.fontDisplay, color: treatment.ink });
     elements.push({ kind: "text", id: "cover-subtitle", x: 0.08, y: 0.69, w: 0.46, h: 0.06, text: slide.subheadline, fontSize: 14, fontFace: family.fontBody, color: treatment.muted });
     elements.push({ kind: "shape", id: "cover-coral-block", x: 0.72, y: 0.17, w: 0.13, h: 0.13, fill: treatment.coral, solidFill: treatment.coral, rotate: 45 });
@@ -243,13 +243,14 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
 
   if (slide.layoutKind === "cta") {
     elements.push({ kind: "shape", id: "cta-gradient-block", x: 0.78, y: 0, w: 0.22, h: 1, fill: treatment.coral, solidFill: treatment.coral, variant: "parallelogram" });
-    addHeader(elements, slide, family, treatment, { width: imagePath ? 0.48 : 0.62, y: 0.29, size: 36, subtitleY: 0.52 });
+    const isContactSlide = slide.id === "kalpa-contact";
+    addHeader(elements, slide, family, treatment, { width: imagePath ? 0.48 : 0.62, y: 0.29, size: 36, subtitleY: 0.52, showEyebrow: !isContactSlide });
     if (imagePath) addImage(elements, "cta-image", imagePath, imageAssetId, 0.67, 0.29, 0.2, 0.36, treatment);
     elements.push({ kind: "line", id: "cta-rule", x: 0.08, y: 0.64, w: 0.18, h: 0.004, color: treatment.coral, strokeWidth: 3 });
-    elements.push({ kind: "text", id: "cta-action", x: 0.08, y: 0.69, w: 0.45, h: 0.045, text: slide.ctaText || "Schedule your implementation planning call.", fontSize: 15, fontWeight: 800, color: treatment.ink });
-    if (slide.ctaSubtext || slide.contactLine) elements.push({ kind: "text", id: "cta-subtext", x: 0.08, y: 0.77, w: 0.46, h: 0.035, text: slide.ctaSubtext || slide.contactLine, fontSize: 11, color: treatment.muted });
-    if (slide.id === "kalpa-contact") {
-      elements.push({ kind: "image", id: "cta-logo", x: 0.76, y: 0.68, w: 0.08, h: 0.16, src: "/kalpa-logo.png" });
+    elements.push({ kind: "text", id: "cta-action", x: 0.08, y: 0.69, w: 0.45, h: 0.05, text: slide.ctaText || "Schedule your implementation planning call.", fontSize: isContactSlide ? 18 : 15, fontWeight: 800, color: treatment.ink });
+    if (slide.ctaSubtext || slide.contactLine) elements.push({ kind: "text", id: "cta-subtext", x: 0.08, y: 0.77, w: 0.5, h: 0.055, text: slide.ctaSubtext || slide.contactLine, fontSize: isContactSlide ? 18 : 11, fontWeight: isContactSlide ? 800 : undefined, color: isContactSlide ? treatment.coral : treatment.muted });
+    if (isContactSlide) {
+      elements.push({ kind: "image", id: "cta-logo", x: 0.76, y: 0.68, w: 0.08, h: 0.16, src: "/kalpa-logo.png", fit: "contain" });
     }
   }
 
