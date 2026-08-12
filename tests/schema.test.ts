@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { briefSchema, slideContentSchema, type SlideContent } from "@/lib/schema";
 import { finalizeSlidesForRender, normalizeSlideForRender } from "@/lib/slides/normalize";
 import { withKalpaBookends } from "@/lib/slides/bookends";
+import { resolveSlide } from "@/lib/templates/layout-engine";
 
 describe("schema validation", () => {
   it("accepts a valid brief", () => {
@@ -107,7 +108,7 @@ describe("schema validation", () => {
     });
 
     expect(rendered.bullets).toHaveLength(3);
-    expect(rendered.bullets.every((bullet) => bullet.length <= 42)).toBe(true);
+    expect(rendered.bullets.every((bullet) => bullet.length <= 50)).toBe(true);
   });
 
   it("adds Kalpa's protected welcome and contact slides around generated content", () => {
@@ -115,5 +116,22 @@ describe("schema validation", () => {
     expect(generated).toHaveLength(2);
     expect(generated[0]).toMatchObject({ id: "kalpa-cover", layoutKind: "hero", headline: "Northstar implementation plan" });
     expect(generated[1]).toMatchObject({ id: "kalpa-contact", layoutKind: "cta", ctaSubtext: "sales@kalpainc.com" });
+  });
+
+  it("uses an expanded rounded card surface for three-pillar slides", () => {
+    const resolved = resolveSlide({
+      id: "slide_grid",
+      sequence: 1,
+      purpose: "Explain the operating model pillars.",
+      layoutKind: "industry-grid",
+      eyebrow: "Operating model",
+      headline: "Three changes that create reliable execution",
+      subheadline: "",
+      bullets: ["Trusted data", "Clear accountability", "Repeatable execution"],
+      stats: [], steps: [], leftColumnTitle: "", leftColumnPoints: [], rightColumnTitle: "", rightColumnPoints: [],
+      quote: "", quoteAttribution: "", ctaText: "", ctaSubtext: "", contactLine: "", imageAssetIds: [], notes: ""
+    }, "strategic-frameworks", []);
+
+    expect(resolved.elements.find((element) => element.id === "pillar-0")).toMatchObject({ kind: "shape", h: 0.25, radius: 0.14 });
   });
 });

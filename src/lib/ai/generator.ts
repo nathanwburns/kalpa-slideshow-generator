@@ -62,9 +62,9 @@ function composeSlideDesignPrompt() {
     "Prefer one dominant idea per slide and leave visual breathing room.",
     "Content budgets by layout:",
     "- hero: headline <= 10 words, subheadline <= 20 words, max 3 bullets",
-    "- challenge: max 3 editorial points, each <= 10 words; do not turn every point into a card",
-    "- industry-grid: exactly 3 pillars, each <= 8 words",
-    "- proof: max 3 stats, each label <= 4 words, or max 3 evidence bullets of <= 9 words",
+    "- challenge: 3-4 editorial points, each <= 12 words; do not turn every point into a card",
+    "- industry-grid: exactly 3 pillars, each <= 11 words",
+    "- proof: max 3 stats, each label <= 4 words, or 3-4 evidence bullets of <= 11 words",
     "- process: max 4 steps, each step <= 5 words",
     "- comparison: max 4 bullets per column, each bullet <= 10 words",
     "- quote: one quote and one short attribution",
@@ -74,6 +74,7 @@ function composeSlideDesignPrompt() {
     "If there is no suitable image asset, do not imply a photo-dependent composition; favor a strong text-and-shape layout instead.",
     "Never use generic button labels, fake controls, or dense dashboard components as slide content.",
     "Do not create a title cover or thank-you slide. The application adds Kalpa-branded bookends automatically.",
+    "Use the content capacity provided: core slides need a clear supporting line plus concrete evidence, not only a headline and a decorative shape.",
     "Prefer whitespace, hierarchy, and restraint over filling every field. If an idea does not fit its content budget, rewrite it rather than shrinking it."
   ].join("\n");
 }
@@ -269,7 +270,7 @@ export async function generatePresentationVisuals(input: {
 
   const candidates = input.slides
     .filter((slide) => ["hero", "challenge", "industry-grid", "proof", "cta"].includes(slide.layoutKind))
-    .slice(0, 2);
+    .slice(0, 3);
   if (!candidates.length) return [] as AssetRecord[];
 
   const client = getOpenAIClient();

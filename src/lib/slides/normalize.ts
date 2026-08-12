@@ -81,7 +81,7 @@ export function normalizeSlideForRender(slide: SlideContent): SlideContent {
   }
 
   if (normalized.layoutKind === "challenge") {
-    const bullets = cleanList(normalized.bullets.length ? normalized.bullets : normalized.steps, 3, 52);
+    const bullets = cleanList(normalized.bullets.length ? normalized.bullets : normalized.steps, 4, 56);
     return {
       ...normalized,
       bullets,
@@ -90,7 +90,7 @@ export function normalizeSlideForRender(slide: SlideContent): SlideContent {
   }
 
   if (normalized.layoutKind === "industry-grid") {
-    const bullets = cleanList(normalized.bullets.length ? normalized.bullets : normalized.steps, 3, 42);
+    const bullets = cleanList(normalized.bullets.length ? normalized.bullets : normalized.steps, 3, 50);
     return {
       ...normalized,
       bullets,
@@ -101,7 +101,7 @@ export function normalizeSlideForRender(slide: SlideContent): SlideContent {
   if (normalized.layoutKind === "proof") {
     return {
       ...normalized,
-      bullets: cleanList(normalized.bullets, 3, 48),
+      bullets: cleanList(normalized.bullets, 4, 54),
       stats: normalized.stats.slice(0, 3)
     };
   }

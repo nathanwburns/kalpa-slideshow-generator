@@ -5,7 +5,7 @@ import { normalizeSlideForRender } from "@/lib/slides/normalize";
 
 export type RenderElement =
   | { kind: "text"; id: string; x: number; y: number; w: number; h: number; text: string; fontSize: number; fontWeight?: number; fontFace?: string; color: string; align?: "left" | "center" | "right"; opacity?: number }
-  | { kind: "shape"; id: string; x: number; y: number; w: number; h: number; fill: string; solidFill?: string; radius?: number; stroke?: string; strokeWidth?: number; rotate?: number }
+  | { kind: "shape"; id: string; x: number; y: number; w: number; h: number; fill: string; solidFill?: string; radius?: number; stroke?: string; strokeWidth?: number; rotate?: number; variant?: "parallelogram" }
   | { kind: "line"; id: string; x: number; y: number; w: number; h: number; color: string; strokeWidth: number }
   | { kind: "image"; id: string; x: number; y: number; w: number; h: number; src: string; assetId?: string; radius?: number };
 
@@ -124,9 +124,9 @@ function addImage(elements: RenderElement[], id: string, src: string, assetId: s
 
 function addEditorialList(elements: RenderElement[], items: string[], treatment: Treatment, x: number, y: number, width: number) {
   items.slice(0, 4).forEach((item, index) => {
-    const rowY = y + index * 0.095;
+    const rowY = y + index * 0.075;
     elements.push({ kind: "shape", id: `list-marker-${index}`, x, y: rowY + 0.013, w: 0.012, h: 0.012, fill: index === 0 ? treatment.coral : treatment.primary, solidFill: index === 0 ? treatment.coral : treatment.primary, rotate: 45 });
-    elements.push({ kind: "text", id: `list-item-${index}`, x: x + 0.035, y: rowY, w: width - 0.035, h: 0.052, text: item, fontSize: fitFont(item, 13, 10, 48), fontWeight: index === 0 ? 700 : undefined, color: treatment.ink });
+    elements.push({ kind: "text", id: `list-item-${index}`, x: x + 0.035, y: rowY, w: width - 0.035, h: 0.058, text: item, fontSize: fitFont(item, 14, 11, 46), fontWeight: index === 0 ? 700 : undefined, color: treatment.ink });
   });
 }
 
@@ -158,7 +158,7 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
       addWireDiamond(elements, "hero-diamond-b", 0.77, 0.35, 0.12, treatment);
       elements.push({ kind: "shape", id: "hero-signal", x: 0.77, y: 0.39, w: 0.06, h: 0.06, fill: treatment.coral, solidFill: treatment.coral, rotate: 45 });
     }
-    addEditorialList(elements, slide.bullets, treatment, 0.08, salesHero ? 0.66 : 0.64, imagePath ? (salesHero ? 0.4 : 0.43) : 0.5);
+    addEditorialList(elements, slide.bullets, treatment, 0.08, salesHero ? 0.66 : 0.62, imagePath ? (salesHero ? 0.4 : 0.43) : 0.5);
   }
 
   if (slide.layoutKind === "challenge") {
@@ -168,7 +168,7 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
       addWireDiamond(elements, "challenge-diamond", 0.72, 0.35, 0.18, treatment, 0.7);
       elements.push({ kind: "shape", id: "challenge-signal", x: 0.78, y: 0.41, w: 0.055, h: 0.055, fill: treatment.coral, solidFill: treatment.coral, rotate: 45 });
     }
-    addEditorialList(elements, slide.bullets, treatment, 0.08, 0.59, imagePath ? 0.46 : 0.53);
+    addEditorialList(elements, slide.bullets, treatment, 0.08, 0.55, imagePath ? 0.46 : 0.53);
   }
 
   if (slide.layoutKind === "industry-grid") {
@@ -177,10 +177,10 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
     cards.forEach((item, index) => {
       const x = 0.075 + index * 0.285;
       const pillarFill = treatment.dark ? treatment.card : treatment.direction === "editorial" && index === 1 ? "#F8E4D8" : "#FFFFFF";
-      elements.push({ kind: "shape", id: `pillar-${index}`, x, y: 0.55, w: 0.24, h: 0.22, fill: pillarFill, solidFill: pillarFill, stroke: treatment.line, strokeWidth: 1 });
+      elements.push({ kind: "shape", id: `pillar-${index}`, x, y: 0.53, w: 0.24, h: 0.25, fill: pillarFill, solidFill: pillarFill, stroke: treatment.line, strokeWidth: 1, radius: 0.14 });
       elements.push({ kind: "shape", id: `pillar-signal-${index}`, x: x + 0.025, y: 0.575, w: 0.026, h: 0.026, fill: index === 1 ? treatment.coral : treatment.primary, solidFill: index === 1 ? treatment.coral : treatment.primary, rotate: 45 });
       elements.push({ kind: "text", id: `pillar-number-${index}`, x: x + 0.065, y: 0.575, w: 0.13, h: 0.025, text: `0${index + 1}`, fontSize: 9, fontWeight: 800, color: treatment.muted });
-      elements.push({ kind: "text", id: `pillar-copy-${index}`, x: x + 0.025, y: 0.64, w: 0.19, h: 0.08, text: item, fontSize: fitFont(item, 12, 10, 32), fontWeight: 700, color: treatment.ink });
+      elements.push({ kind: "text", id: `pillar-copy-${index}`, x: x + 0.025, y: 0.635, w: 0.19, h: 0.1, text: item, fontSize: fitFont(item, 13, 11, 36), fontWeight: 700, color: treatment.ink });
     });
   }
 
@@ -199,11 +199,11 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
       elements.push({ kind: "text", id: "proof-primary-stat", x: 0.08, y: 0.3, w: 0.38, h: 0.19, text: primaryStat.value, fontSize: fitFont(primaryStat.value, 58, 34, 7), fontWeight: 800, fontFace: family.fontDisplay, color: treatment.ink });
       elements.push({ kind: "text", id: "proof-primary-label", x: 0.09, y: 0.51, w: 0.3, h: 0.06, text: primaryStat.label, fontSize: 13, fontWeight: 700, color: treatment.muted });
       elements.push({ kind: "text", id: "proof-headline-right", x: 0.54, y: 0.29, w: 0.36, h: 0.15, text: slide.headline, fontSize: 27, fontWeight: 800, fontFace: family.fontDisplay, color: treatment.ink });
-      addEditorialList(elements, slide.bullets, treatment, 0.54, 0.53, 0.34);
+      addEditorialList(elements, slide.bullets, treatment, 0.54, 0.5, 0.34);
     } else {
       addHeader(elements, slide, family, treatment, { width: imagePath ? 0.46 : 0.7, y: 0.23, size: 29, subtitleY: 0.42 });
       if (imagePath) addImage(elements, "proof-image", imagePath, imageAssetId, 0.64, 0.24, 0.26, 0.5, treatment);
-      addEditorialList(elements, slide.bullets, treatment, 0.08, 0.55, imagePath ? 0.46 : 0.72);
+      addEditorialList(elements, slide.bullets, treatment, 0.08, 0.53, imagePath ? 0.46 : 0.72);
     }
   }
 
@@ -227,10 +227,10 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
     [[0.075, slide.leftColumnTitle, slide.leftColumnPoints, "today", "#FFFFFF"], [0.52, slide.rightColumnTitle, slide.rightColumnPoints, "future", treatment.card]].forEach(([rawX, heading, points, id, fill]) => {
       const x = rawX as number;
       const list = points as string[];
-      elements.push({ kind: "shape", id: `${id}-panel`, x, y: 0.55, w: 0.35, h: 0.27, fill: fill as string, solidFill: fill as string, stroke: treatment.line, strokeWidth: 1 });
+      elements.push({ kind: "shape", id: `${id}-panel`, x, y: 0.53, w: 0.35, h: 0.31, fill: fill as string, solidFill: fill as string, stroke: treatment.line, strokeWidth: 1, radius: 0.12 });
       elements.push({ kind: "line", id: `${id}-rule`, x: x + 0.025, y: 0.59, w: 0.07, h: 0.003, color: id === "future" ? treatment.coral : treatment.primary, strokeWidth: 3 });
       elements.push({ kind: "text", id: `${id}-heading`, x: x + 0.025, y: 0.625, w: 0.28, h: 0.035, text: heading as string, fontSize: 15, fontWeight: 800, color: treatment.ink });
-      list.slice(0, 4).forEach((item, index) => elements.push({ kind: "text", id: `${id}-point-${index}`, x: x + 0.025, y: 0.69 + index * 0.045, w: 0.29, h: 0.035, text: `• ${item}`, fontSize: fitFont(item, 10, 8, 32), color: treatment.ink }));
+      list.slice(0, 4).forEach((item, index) => elements.push({ kind: "text", id: `${id}-point-${index}`, x: x + 0.025, y: 0.69 + index * 0.043, w: 0.29, h: 0.038, text: `• ${item}`, fontSize: fitFont(item, 11, 9, 32), color: treatment.ink }));
     });
   }
 
@@ -242,7 +242,7 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
   }
 
   if (slide.layoutKind === "cta") {
-    elements.push({ kind: "shape", id: "cta-gradient-block", x: 0.76, y: -0.15, w: 0.38, h: 1.3, fill: treatment.coral, solidFill: treatment.coral, rotate: 18 });
+    elements.push({ kind: "shape", id: "cta-gradient-block", x: 0.78, y: 0, w: 0.22, h: 1, fill: treatment.coral, solidFill: treatment.coral, variant: "parallelogram" });
     addHeader(elements, slide, family, treatment, { width: imagePath ? 0.48 : 0.62, y: 0.29, size: 36, subtitleY: 0.52 });
     if (imagePath) addImage(elements, "cta-image", imagePath, imageAssetId, 0.67, 0.29, 0.2, 0.36, treatment);
     elements.push({ kind: "line", id: "cta-rule", x: 0.08, y: 0.64, w: 0.18, h: 0.004, color: treatment.coral, strokeWidth: 3 });
@@ -250,7 +250,6 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
     if (slide.ctaSubtext || slide.contactLine) elements.push({ kind: "text", id: "cta-subtext", x: 0.08, y: 0.77, w: 0.46, h: 0.035, text: slide.ctaSubtext || slide.contactLine, fontSize: 11, color: treatment.muted });
     if (slide.id === "kalpa-contact") {
       elements.push({ kind: "image", id: "cta-logo", x: 0.76, y: 0.68, w: 0.08, h: 0.16, src: "/kalpa-logo.png" });
-      elements.push({ kind: "text", id: "cta-email", x: 0.08, y: 0.82, w: 0.44, h: 0.03, text: "sales@kalpainc.com", fontSize: 12, fontWeight: 800, color: treatment.ink });
     }
   }
 

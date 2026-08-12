@@ -44,9 +44,10 @@ export function SlidePreview({ projectId, slide, assets, templateFamily, classNa
               style={{
                 ...common,
                 background: element.fill,
-                borderRadius: element.radius ? `${element.radius}px` : undefined,
+                borderRadius: element.radius ? `${element.radius * 100}%` : undefined,
                 border: element.stroke ? `1px solid ${element.stroke}` : undefined,
-                transform: element.rotate ? `rotate(${element.rotate}deg)` : undefined
+                transform: element.rotate ? `rotate(${element.rotate}deg)` : undefined,
+                clipPath: element.variant === "parallelogram" ? "polygon(24% 0, 100% 0, 76% 100%, 0 100%)" : undefined
               }}
             />
           );
@@ -67,14 +68,15 @@ export function SlidePreview({ projectId, slide, assets, templateFamily, classNa
         }
 
         if (element.kind === "text") {
-          const previewFontSize = adjustPreviewFontSize(element.text, element.fontSize, element.w, element.h);
           return (
             <div
               key={element.id}
               style={{
                 ...common,
                 color: element.color,
-                fontSize: `${previewFontSize}px`,
+                // The layout engine stores PowerPoint points. Browsers use CSS pixels,
+                // so convert at 96dpi rather than independently shrinking preview copy.
+                fontSize: `${element.fontSize * (96 / 72)}px`,
                 fontWeight: element.fontWeight || 400,
                 fontFamily: element.fontFace || resolved.family.fontBody,
                 lineHeight: element.fontWeight && element.fontWeight >= 700 ? 1.05 : 1.14,
@@ -114,15 +116,4 @@ export function SlidePreview({ projectId, slide, assets, templateFamily, classNa
       })}
     </div>
   );
-}
-
-function adjustPreviewFontSize(text: string, fontSize: number, width: number, height: number) {
-  const area = Math.max(0.02, width * height);
-  const density = text.length / (area * 108);
-
-  if (density > 2.1) return Math.max(8, Math.round(fontSize * 0.5));
-  if (density > 1.7) return Math.max(9, Math.round(fontSize * 0.6));
-  if (density > 1.3) return Math.max(10, Math.round(fontSize * 0.74));
-  if (density > 1.0) return Math.max(11, Math.round(fontSize * 0.88));
-  return fontSize;
 }

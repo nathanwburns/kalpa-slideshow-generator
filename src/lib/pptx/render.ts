@@ -6,6 +6,15 @@ import { resolveSlide } from "@/lib/templates/layout-engine";
 import { familyThemes } from "@/lib/templates/families";
 import { absoluteDataPath, ensureProjectFilesDir } from "@/lib/data/storage";
 
+function pptColor(value: string) {
+  const hex = value.replace("#", "");
+  if (/^[0-9A-Fa-f]{6}$/.test(hex)) return hex;
+  const channels = value.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  return channels
+    ? channels.slice(1, 4).map((channel) => Number(channel).toString(16).padStart(2, "0")).join("")
+    : "000000";
+}
+
 export async function renderProjectPptx(project: ProjectRecord) {
   const pptx = new pptxgen();
   pptx.layout = "LAYOUT_WIDE";
@@ -26,17 +35,17 @@ export async function renderProjectPptx(project: ProjectRecord) {
       const h = element.h * 7.5;
 
       if (element.kind === "shape") {
-        pptSlide.addShape(pptx.ShapeType.rect, {
+        pptSlide.addShape(element.variant === "parallelogram" ? pptx.ShapeType.parallelogram : element.radius ? pptx.ShapeType.roundRect : pptx.ShapeType.rect, {
           x,
           y,
           w,
           h,
           rectRadius: element.radius ? 0.08 : undefined,
           fill: {
-            color: (element.solidFill || (element.fill.startsWith("#") ? element.fill : theme.panelSolid)).replace("#", ""),
+            color: pptColor(element.solidFill || (element.fill.startsWith("#") ? element.fill : theme.panelSolid)),
             transparency: element.fill.startsWith("rgba") ? 16 : 0
           },
-          line: { color: (element.stroke || theme.line).replace("#", ""), width: element.strokeWidth || 0 },
+          line: { color: pptColor(element.stroke || theme.line), width: element.strokeWidth || 0 },
           rotate: element.rotate
         });
       }
@@ -47,7 +56,7 @@ export async function renderProjectPptx(project: ProjectRecord) {
           y,
           w,
           h,
-          line: { color: element.color.replace("#", ""), width: element.strokeWidth }
+          line: { color: pptColor(element.color), width: element.strokeWidth }
         });
       }
 
@@ -60,10 +69,12 @@ export async function renderProjectPptx(project: ProjectRecord) {
           fontFace: element.fontFace || theme.fontBody,
           fontSize: element.fontSize,
           bold: element.fontWeight ? element.fontWeight >= 700 : false,
-          color: element.color.replace("#", ""),
+          color: pptColor(element.color),
           align: element.align,
           margin: 0,
-          fit: "shrink",
+          // Copy is already constrained in the shared layout engine. Avoid a
+          // PowerPoint-only shrink pass that would make exports diverge from preview.
+          fit: "resize",
           valign: "top"
         });
       }
@@ -77,7 +88,10 @@ export async function renderProjectPptx(project: ProjectRecord) {
           x,
           y,
           w,
-          h
+          h,
+          // Match the browser's object-fit: cover behavior so photos keep their
+          // proportions and receive the same centered crop in the exported deck.
+          sizing: { type: "cover", x, y, w, h }
         });
       }
     }
