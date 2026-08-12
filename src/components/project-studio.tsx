@@ -31,6 +31,7 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
   const [activeSlideId, setActiveSlideId] = useState(project.slides[0]?.id || "");
   const [activeOutlineId, setActiveOutlineId] = useState(project.outline[0]?.id || "");
   const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>(project.slides.length ? "deck" : "outline");
+  const [fullscreenPreview, setFullscreenPreview] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,6 +57,36 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
       setWorkspaceMode(project.slides.length ? "deck" : "outline");
     }
   }, [project.outline.length, project.slides.length, workspaceMode]);
+
+  useEffect(() => {
+    if (!fullscreenPreview) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function handleKeydown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setFullscreenPreview(false);
+        return;
+      }
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        goToSlide(-1);
+      }
+
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        goToSlide(1);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeydown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeydown);
+    };
+  }, [fullscreenPreview, activeSlideIndex, project.slides.length]);
 
   async function reloadProject(projectId: string) {
     const response = await fetch(`/api/v1/projects/${projectId}`);
@@ -265,6 +296,66 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
     if (!project.slides.length) return;
     const nextIndex = activeSlideIndex < 0 ? 0 : (activeSlideIndex + offset + project.slides.length) % project.slides.length;
     setActiveSlideId(project.slides[nextIndex].id);
+  }
+
+  function renderDeckPreview(expanded: boolean) {
+    if (!activeSlide) return null;
+
+    const frameClassName = expanded
+      ? "fixed inset-0 z-50 flex items-center justify-center bg-slate-950/88 px-6 py-8 backdrop-blur-sm"
+      : "";
+    const stageClassName = expanded
+      ? "relative w-full max-w-[min(94vw,1720px)]"
+      : "relative rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#f6f7f8,#eef2f5)] p-4";
+    const previewClassName = expanded ? "w-full rounded-[28px]" : "";
+    const navButtonClassName = expanded
+      ? "absolute top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/96 px-5 py-4 text-lg font-semibold text-slate-900 shadow-xl ring-1 ring-slate-200"
+      : "absolute top-1/2 -translate-y-1/2 rounded-full bg-white/95 px-4 py-3 text-sm font-semibold text-slate-900 shadow-lg ring-1 ring-slate-200";
+    const utilityButtonClassName = "rounded-full bg-white/95 px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg ring-1 ring-slate-200 transition hover:bg-white";
+
+    return (
+      <div
+        className={frameClassName}
+        onClick={expanded ? () => setFullscreenPreview(false) : undefined}
+        role={expanded ? "dialog" : undefined}
+        aria-modal={expanded ? true : undefined}
+      >
+        <div className={stageClassName} onClick={expanded ? (event) => event.stopPropagation() : undefined}>
+          {expanded ? (
+            <div className="mb-4 flex items-center justify-between gap-4 text-white">
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Full-screen preview</div>
+                <div className="text-lg font-bold">Slide {activeSlideIndex + 1} of {project.slides.length}</div>
+              </div>
+              <button className={utilityButtonClassName} onClick={() => setFullscreenPreview(false)} type="button">
+                Contract
+              </button>
+            </div>
+          ) : (
+            <button className={`absolute right-4 top-4 z-10 ${utilityButtonClassName}`} onClick={() => setFullscreenPreview(true)} type="button">
+              Expand
+            </button>
+          )}
+
+          <SlidePreview projectId={project.id} slide={activeSlide} assets={project.assets} templateFamily={project.templateFamily} className={previewClassName} />
+
+          <button
+            className={`${navButtonClassName} ${expanded ? "left-[-1.25rem] md:left-[-2.75rem]" : "left-7"}`}
+            onClick={() => goToSlide(-1)}
+            type="button"
+          >
+            ←
+          </button>
+          <button
+            className={`${navButtonClassName} ${expanded ? "right-[-1.25rem] md:right-[-2.75rem]" : "right-7"}`}
+            onClick={() => goToSlide(1)}
+            type="button"
+          >
+            →
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -624,23 +715,7 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
 
                 {activeSlide ? (
                   <>
-                    <div className="relative rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#f6f7f8,#eef2f5)] p-4">
-                      <SlidePreview projectId={project.id} slide={activeSlide} assets={project.assets} templateFamily={project.templateFamily} />
-                      <button
-                        className="absolute left-7 top-1/2 -translate-y-1/2 rounded-full bg-white/95 px-4 py-3 text-sm font-semibold text-slate-900 shadow-lg ring-1 ring-slate-200"
-                        onClick={() => goToSlide(-1)}
-                        type="button"
-                      >
-                        ←
-                      </button>
-                      <button
-                        className="absolute right-7 top-1/2 -translate-y-1/2 rounded-full bg-white/95 px-4 py-3 text-sm font-semibold text-slate-900 shadow-lg ring-1 ring-slate-200"
-                        onClick={() => goToSlide(1)}
-                        type="button"
-                      >
-                        →
-                      </button>
-                    </div>
+                    {renderDeckPreview(false)}
 
                     <div className="grid gap-3 rounded-[24px] border border-slate-200 bg-white p-5">
                       <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{activeSlide.layoutKind}</div>
@@ -682,6 +757,7 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
           </div>
         </section>
       </div>
+      {fullscreenPreview && activeSlide ? renderDeckPreview(true) : null}
     </div>
   );
 }
