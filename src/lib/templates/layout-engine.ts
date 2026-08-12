@@ -2,6 +2,7 @@ import path from "path";
 import { familyThemes, type FamilyTheme } from "@/lib/templates/families";
 import type { AssetRecord, SlideContent, TemplateFamilyId } from "@/lib/schema";
 import { absoluteDataPath } from "@/lib/data/storage";
+import { normalizeSlideForRender } from "@/lib/slides/normalize";
 
 export type RenderElement =
   | {
@@ -76,7 +77,18 @@ function baseFrame(family: FamilyTheme): RenderElement[] {
   ];
 }
 
+function fitFont(text: string, baseSize: number, minSize: number, compactAt: number, denseAt: number) {
+  if (text.length > denseAt) return Math.max(minSize, baseSize - 3);
+  if (text.length > compactAt) return Math.max(minSize, baseSize - 1);
+  return baseSize;
+}
+
+function bulletText(text: string) {
+  return `• ${text}`;
+}
+
 export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, assets: AssetRecord[]): ResolvedSlide {
+  slide = normalizeSlideForRender(slide);
   const family = familyThemes[familyId];
   const imagePath = slide.imageAssetIds[0] ? assetPath(slide.imageAssetIds[0], assets) : "";
   const elements: RenderElement[] = [...baseFrame(family)];
@@ -143,6 +155,45 @@ export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, as
     } else {
       elements.push({ kind: "shape", id: "hero-art", x: 0.6, y: 0.16, w: 0.27, h: 0.48, fill: family.accentSoft, solidFill: family.cardSolid, stroke: family.frame, strokeWidth: 1, radius: 18 });
       elements.push({ kind: "shape", id: "hero-art-tab", x: 0.805, y: 0.2, w: 0.05, h: 0.018, fill: family.signal, solidFill: family.signal, radius: 3 });
+      elements.push({
+        kind: "text",
+        id: "hero-panel-label",
+        x: 0.63,
+        y: 0.22,
+        w: 0.18,
+        h: 0.03,
+        text: "Operational outcomes",
+        fontSize: 11,
+        fontWeight: 700,
+        color: family.accent
+      });
+      slide.bullets.slice(0, 3).forEach((bullet, index) => {
+        const y = 0.29 + index * 0.1;
+        elements.push({
+          kind: "shape",
+          id: `hero-panel-card-${index}`,
+          x: 0.63,
+          y,
+          w: 0.2,
+          h: 0.075,
+          fill: family.panel,
+          solidFill: family.panelSolid,
+          stroke: family.frame,
+          strokeWidth: 1,
+          radius: 14
+        });
+        elements.push({
+          kind: "text",
+          id: `hero-panel-copy-${index}`,
+          x: 0.645,
+          y: y + 0.018,
+          w: 0.17,
+          h: 0.04,
+          text: bullet,
+          fontSize: 10,
+          color: family.ink
+        });
+      });
     }
     slide.bullets.slice(0, 3).forEach((bullet, index) => {
       elements.push({
@@ -152,7 +203,7 @@ export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, as
         y: 0.52 + index * 0.07,
         w: 0.41,
         h: 0.05,
-        text: `• ${bullet}`,
+        text: bulletText(bullet),
         fontSize: 12,
         color: family.ink
       });
@@ -165,6 +216,7 @@ export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, as
     items.forEach((item, index) => {
       const col = index % 2;
       const row = Math.floor(index / 2);
+      const textSize = fitFont(item, 12, 10, 58, 76);
       elements.push({
         kind: "shape",
         id: `card-${index}`,
@@ -179,14 +231,25 @@ export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, as
         strokeWidth: 1
       });
       elements.push({
+        kind: "shape",
+        id: `card-accent-${index}`,
+        x: 0.13 + col * 0.35,
+        y: 0.525 + row * 0.16,
+        w: 0.03,
+        h: 0.014,
+        fill: family.signal,
+        solidFill: family.signal,
+        radius: 3
+      });
+      elements.push({
         kind: "text",
         id: `card-text-${index}`,
         x: 0.13 + col * 0.35,
-        y: 0.54 + row * 0.16,
+        y: 0.552 + row * 0.16,
         w: 0.24,
-        h: 0.05,
+        h: 0.06,
         text: item,
-        fontSize: 12,
+        fontSize: textSize,
         color: family.ink
       });
     });
@@ -194,57 +257,98 @@ export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, as
 
   if (slide.layoutKind === "proof") {
     addHeadline();
-    slide.stats.slice(0, 3).forEach((stat, index) => {
-      elements.push({
-        kind: "shape",
-        id: `stat-${index}`,
-        x: 0.11 + index * 0.24,
-        y: 0.54,
-        w: 0.19,
-        h: 0.2,
-        fill: family.card,
-        solidFill: family.cardSolid,
-        radius: 24
+    if (slide.stats.length) {
+      slide.stats.slice(0, 3).forEach((stat, index) => {
+        elements.push({
+          kind: "shape",
+          id: `stat-${index}`,
+          x: 0.11 + index * 0.24,
+          y: 0.54,
+          w: 0.19,
+          h: 0.2,
+          fill: family.card,
+          solidFill: family.cardSolid,
+          radius: 24
+        });
+        elements.push({
+          kind: "shape",
+          id: `stat-tab-${index}`,
+          x: 0.125 + index * 0.24,
+          y: 0.565,
+          w: 0.045,
+          h: 0.012,
+          fill: family.signal,
+          solidFill: family.signal,
+          radius: 3
+        });
+        elements.push({
+          kind: "text",
+          id: `stat-value-${index}`,
+          x: 0.125 + index * 0.24,
+          y: 0.595,
+          w: 0.16,
+          h: 0.06,
+          text: stat.value,
+          fontSize: fitFont(stat.value, 24, 18, 7, 11),
+          fontWeight: 800,
+          fontFace: family.fontDisplay,
+          color: family.accent,
+          align: "center"
+        });
+        elements.push({
+          kind: "text",
+          id: `stat-label-${index}`,
+          x: 0.125 + index * 0.24,
+          y: 0.66,
+          w: 0.16,
+          h: 0.06,
+          text: stat.label,
+          fontSize: fitFont(stat.label, 11, 10, 20, 30),
+          fontFace: family.fontBody,
+          color: family.ink,
+          align: "center"
+        });
       });
-      elements.push({
-        kind: "shape",
-        id: `stat-tab-${index}`,
-        x: 0.125 + index * 0.24,
-        y: 0.565,
-        w: 0.045,
-        h: 0.012,
-        fill: family.signal,
-        solidFill: family.signal,
-        radius: 3
+    } else {
+      slide.bullets.slice(0, 3).forEach((bullet, index) => {
+        elements.push({
+          kind: "shape",
+          id: `proof-card-${index}`,
+          x: 0.11 + index * 0.24,
+          y: 0.54,
+          w: 0.19,
+          h: 0.2,
+          fill: family.card,
+          solidFill: family.cardSolid,
+          stroke: family.frame,
+          strokeWidth: 1,
+          radius: 24
+        });
+        elements.push({
+          kind: "shape",
+          id: `proof-card-tab-${index}`,
+          x: 0.125 + index * 0.24,
+          y: 0.565,
+          w: 0.04,
+          h: 0.012,
+          fill: family.signal,
+          solidFill: family.signal,
+          radius: 3
+        });
+        elements.push({
+          kind: "text",
+          id: `proof-card-copy-${index}`,
+          x: 0.125 + index * 0.24,
+          y: 0.605,
+          w: 0.155,
+          h: 0.09,
+          text: bullet,
+          fontSize: fitFont(bullet, 11, 10, 38, 58),
+          color: family.ink,
+          align: "center"
+        });
       });
-      elements.push({
-        kind: "text",
-        id: `stat-value-${index}`,
-        x: 0.125 + index * 0.24,
-        y: 0.595,
-        w: 0.16,
-        h: 0.06,
-        text: stat.value,
-        fontSize: 24,
-        fontWeight: 800,
-        fontFace: family.fontDisplay,
-        color: family.accent,
-        align: "center"
-      });
-      elements.push({
-        kind: "text",
-        id: `stat-label-${index}`,
-        x: 0.125 + index * 0.24,
-        y: 0.66,
-        w: 0.16,
-        h: 0.06,
-        text: stat.label,
-        fontSize: 11,
-        fontFace: family.fontBody,
-        color: family.ink,
-        align: "center"
-      });
-    });
+    }
   }
 
   if (slide.layoutKind === "process") {
@@ -274,7 +378,7 @@ export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, as
         w: 0.11,
         h: 0.09,
         text: step,
-        fontSize: 10,
+        fontSize: fitFont(step, 10, 9, 24, 34),
         color: family.ink,
         align: "center"
       });
@@ -283,15 +387,18 @@ export function resolveSlide(slide: SlideContent, familyId: TemplateFamilyId, as
 
   if (slide.layoutKind === "comparison") {
     addHeadline();
-    elements.push({ kind: "shape", id: "left-col", x: 0.11, y: 0.52, w: 0.31, h: 0.26, fill: family.card, solidFill: family.cardSolid, stroke: family.frame, strokeWidth: 1, radius: 18 });
-    elements.push({ kind: "shape", id: "right-col", x: 0.47, y: 0.52, w: 0.31, h: 0.26, fill: family.accentSoft, solidFill: family.panelSolid, stroke: family.frame, strokeWidth: 1, radius: 18 });
-    elements.push({ kind: "text", id: "left-title", x: 0.14, y: 0.56, w: 0.24, h: 0.04, text: slide.leftColumnTitle, fontSize: 14, fontWeight: 700, color: family.ink });
-    elements.push({ kind: "text", id: "right-title", x: 0.5, y: 0.56, w: 0.24, h: 0.04, text: slide.rightColumnTitle, fontSize: 14, fontWeight: 700, color: family.ink });
+    const columnRows = Math.max(slide.leftColumnPoints.length, slide.rightColumnPoints.length, 3);
+    const columnHeight = Math.min(0.33, 0.145 + columnRows * 0.048);
+    const rowGap = columnRows >= 4 ? 0.046 : 0.054;
+    elements.push({ kind: "shape", id: "left-col", x: 0.11, y: 0.5, w: 0.31, h: columnHeight, fill: family.card, solidFill: family.cardSolid, stroke: family.frame, strokeWidth: 1, radius: 18 });
+    elements.push({ kind: "shape", id: "right-col", x: 0.47, y: 0.5, w: 0.31, h: columnHeight, fill: family.accentSoft, solidFill: family.panelSolid, stroke: family.frame, strokeWidth: 1, radius: 18 });
+    elements.push({ kind: "text", id: "left-title", x: 0.14, y: 0.54, w: 0.24, h: 0.04, text: slide.leftColumnTitle, fontSize: 14, fontWeight: 700, color: family.ink });
+    elements.push({ kind: "text", id: "right-title", x: 0.5, y: 0.54, w: 0.24, h: 0.04, text: slide.rightColumnTitle, fontSize: 14, fontWeight: 700, color: family.ink });
     slide.leftColumnPoints.slice(0, 4).forEach((item, index) => {
-      elements.push({ kind: "text", id: `left-point-${index}`, x: 0.14, y: 0.62 + index * 0.05, w: 0.23, h: 0.04, text: `• ${item}`, fontSize: 11, color: family.ink });
+      elements.push({ kind: "text", id: `left-point-${index}`, x: 0.14, y: 0.605 + index * rowGap, w: 0.23, h: 0.05, text: bulletText(item), fontSize: fitFont(item, 11, 9, 38, 56), color: family.ink });
     });
     slide.rightColumnPoints.slice(0, 4).forEach((item, index) => {
-      elements.push({ kind: "text", id: `right-point-${index}`, x: 0.5, y: 0.62 + index * 0.05, w: 0.23, h: 0.04, text: `• ${item}`, fontSize: 11, color: family.ink });
+      elements.push({ kind: "text", id: `right-point-${index}`, x: 0.5, y: 0.605 + index * rowGap, w: 0.23, h: 0.05, text: bulletText(item), fontSize: fitFont(item, 11, 9, 38, 56), color: family.ink });
     });
   }
 

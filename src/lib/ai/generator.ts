@@ -13,6 +13,7 @@ import type {
   ThemeConcept
 } from "@/lib/schema";
 import { outlineItemSchema, questionSchema, slideContentSchema, themeConceptSchema } from "@/lib/schema";
+import { normalizeSlidesForRender } from "@/lib/slides/normalize";
 import { clipText } from "@/lib/utils";
 
 function composeAssetContext(assets: AssetRecord[]) {
@@ -37,6 +38,24 @@ async function loadBrandBookContext() {
 
 function composeBrandPrompt(brandBook: string) {
   return brandBook ? `\n\nKalpa brand book:\n${brandBook}` : "";
+}
+
+function composeSlideDesignPrompt() {
+  return [
+    "Design like a professional business presentation system, not a generic AI page.",
+    "Every slide must fit cleanly into its layout with no text overflow, no overlapping text, and no placeholder-looking empty regions.",
+    "Use short executive headlines, concise supporting copy, and only the fields that the selected layout can present well.",
+    "Content budgets by layout:",
+    "- hero: headline <= 12 words, subheadline <= 24 words, max 3 bullets",
+    "- challenge or industry-grid: max 4 cards, each card <= 14 words",
+    "- proof: max 3 stats, each label <= 5 words",
+    "- process: max 4 steps, each step <= 6 words",
+    "- comparison: max 4 bullets per column, each bullet <= 12 words",
+    "- quote: one quote and one short attribution",
+    "- cta: one short action line and one short subline",
+    "If there is no suitable image asset, do not imply a photo-dependent composition; favor a strong text-and-shape layout instead.",
+    "Prefer whitespace, hierarchy, and restraint over filling every field."
+  ].join("\n");
 }
 
 async function parseStructuredJson<T>(response: any, schema: z.ZodType<T>) {
@@ -181,6 +200,7 @@ export async function generateSlides(
 ) {
   const client = getOpenAIClient();
   const brandBook = await loadBrandBookContext();
+  const slideDesignPrompt = composeSlideDesignPrompt();
   const response = await client.responses.create({
     model: process.env.OPENAI_MODEL || "gpt-5",
     input: [
@@ -190,7 +210,7 @@ export async function generateSlides(
           {
             type: "input_text",
             text:
-              `${settings.systemPrompt}\nFollow the template family exactly: ${templateFamily}.\nRespect banned words: ${settings.bannedWords.join(", ")}.\nWriting rules: ${settings.writingRules.join(" | ")}.\nOnly use imageAssetIds from the provided asset list.\nIf a theme concept is provided, reflect its tone, emphasis, and palette sensibility in the slide content and structure choices.${composeBrandPrompt(brandBook)}`
+              `${settings.systemPrompt}\nFollow the template family exactly: ${templateFamily}.\nRespect banned words: ${settings.bannedWords.join(", ")}.\nWriting rules: ${settings.writingRules.join(" | ")}.\nOnly use imageAssetIds from the provided asset list.\nIf a theme concept is provided, reflect its tone, emphasis, and palette sensibility in the slide content and structure choices.\n${slideDesignPrompt}${composeBrandPrompt(brandBook)}`
           }
         ]
       },
@@ -218,7 +238,7 @@ export async function generateSlides(
   });
 
   const parsed = await parseStructuredJson(response, z.object({ slides: z.array(slideContentSchema) }));
-  return parsed.slides as SlideContent[];
+  return normalizeSlidesForRender(parsed.slides as SlideContent[]);
 }
 
 export async function editOutline(
@@ -275,6 +295,7 @@ export async function editSlides(
 ) {
   const client = getOpenAIClient();
   const brandBook = await loadBrandBookContext();
+  const slideDesignPrompt = composeSlideDesignPrompt();
   const response = await client.responses.create({
     model: process.env.OPENAI_MODEL || "gpt-5",
     input: [
@@ -284,7 +305,7 @@ export async function editSlides(
           {
             type: "input_text",
             text:
-              `${settings.systemPrompt}\nRevise only the requested scope. Preserve unaffected slides. Return the full slide array.${composeBrandPrompt(brandBook)}`
+              `${settings.systemPrompt}\nRevise only the requested scope. Preserve unaffected slides. Return the full slide array.\n${slideDesignPrompt}${composeBrandPrompt(brandBook)}`
           }
         ]
       },
@@ -308,5 +329,5 @@ export async function editSlides(
   });
 
   const parsed = await parseStructuredJson(response, z.object({ slides: z.array(slideContentSchema) }));
-  return parsed.slides as SlideContent[];
+  return normalizeSlidesForRender(parsed.slides as SlideContent[]);
 }

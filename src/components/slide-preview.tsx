@@ -76,7 +76,7 @@ export function SlidePreview({ projectId, slide, assets, templateFamily, classNa
                 fontSize: `${previewFontSize}px`,
                 fontWeight: element.fontWeight || 400,
                 fontFamily: element.fontFace || resolved.family.fontBody,
-                lineHeight: 1.14,
+                lineHeight: element.fontWeight && element.fontWeight >= 700 ? 1.06 : 1.16,
                 textAlign: element.align || "left",
                 whiteSpace: "pre-wrap",
                 overflow: "hidden",
@@ -116,10 +116,11 @@ export function SlidePreview({ projectId, slide, assets, templateFamily, classNa
 
 function adjustPreviewFontSize(text: string, fontSize: number, width: number, height: number) {
   const area = Math.max(0.02, width * height);
-  const density = text.length / (area * 120);
+  const density = text.length / (area * 108);
 
-  if (density > 1.7) return Math.max(10, Math.round(fontSize * 0.68));
-  if (density > 1.25) return Math.max(11, Math.round(fontSize * 0.82));
-  if (density > 1.0) return Math.max(12, Math.round(fontSize * 0.92));
+  if (density > 2.2) return Math.max(9, Math.round(fontSize * 0.54));
+  if (density > 1.75) return Math.max(10, Math.round(fontSize * 0.64));
+  if (density > 1.35) return Math.max(11, Math.round(fontSize * 0.78));
+  if (density > 1.05) return Math.max(12, Math.round(fontSize * 0.9));
   return fontSize;
 }
