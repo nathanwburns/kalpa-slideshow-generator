@@ -12,6 +12,7 @@ import {
 } from "@/lib/schema";
 import { createId, ensureProjectFilesDir, getProject, saveProject } from "@/lib/data/storage";
 import { extractTextFromFile } from "@/lib/files/extract";
+import { withKalpaBookends } from "@/lib/slides/bookends";
 import { slugify } from "@/lib/utils";
 
 export function createProjectRecord(input: {
@@ -125,7 +126,8 @@ export async function saveOutline(
 export async function saveSlides(projectId: string, slides: SlideContent[], label: string, generatedAssets: AssetRecord[] = []) {
   const project = await getProject(projectId);
   project.assets.push(...generatedAssets);
-  project.slides = slides;
+  // These bookends are application-owned so AI edits cannot remove the Kalpa welcome or contact slide.
+  project.slides = withKalpaBookends(slides, project.title, project.brief);
   project.status = project.slides.length ? "generated" : project.status;
   stampRevision(project, label);
   return saveProject(project);

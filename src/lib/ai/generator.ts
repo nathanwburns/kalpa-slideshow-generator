@@ -73,6 +73,7 @@ function composeSlideDesignPrompt() {
     "If suitable image assets exist, prioritize them on hero, proof, challenge, industry-grid, or CTA slides.",
     "If there is no suitable image asset, do not imply a photo-dependent composition; favor a strong text-and-shape layout instead.",
     "Never use generic button labels, fake controls, or dense dashboard components as slide content.",
+    "Do not create a title cover or thank-you slide. The application adds Kalpa-branded bookends automatically.",
     "Prefer whitespace, hierarchy, and restraint over filling every field. If an idea does not fit its content budget, rewrite it rather than shrinking it."
   ].join("\n");
 }

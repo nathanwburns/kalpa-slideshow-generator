@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { briefSchema, slideContentSchema, type SlideContent } from "@/lib/schema";
 import { finalizeSlidesForRender, normalizeSlideForRender } from "@/lib/slides/normalize";
+import { withKalpaBookends } from "@/lib/slides/bookends";
 
 describe("schema validation", () => {
   it("accepts a valid brief", () => {
@@ -107,5 +108,12 @@ describe("schema validation", () => {
 
     expect(rendered.bullets).toHaveLength(3);
     expect(rendered.bullets.every((bullet) => bullet.length <= 42)).toBe(true);
+  });
+
+  it("adds Kalpa's protected welcome and contact slides around generated content", () => {
+    const generated = withKalpaBookends([], "Northstar implementation plan", null);
+    expect(generated).toHaveLength(2);
+    expect(generated[0]).toMatchObject({ id: "kalpa-cover", layoutKind: "hero", headline: "Northstar implementation plan" });
+    expect(generated[1]).toMatchObject({ id: "kalpa-contact", layoutKind: "cta", ctaSubtext: "sales@kalpainc.com" });
   });
 });

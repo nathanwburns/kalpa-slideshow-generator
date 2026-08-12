@@ -140,7 +140,16 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
   addBackground(elements, treatment);
   addBrand(elements, slide, family, treatment);
 
-  if (slide.layoutKind === "hero") {
+  if (slide.id === "kalpa-cover") {
+    elements.push({ kind: "image", id: "cover-logo", x: 0.075, y: 0.15, w: 0.08, h: 0.16, src: "/kalpa-logo.png" });
+    elements.push({ kind: "text", id: "cover-overline", x: 0.075, y: 0.35, w: 0.44, h: 0.025, text: "A KALPA IMPLEMENTATION POINT OF VIEW", fontSize: 9, fontWeight: 800, fontFace: family.fontDisplay, color: treatment.coral });
+    elements.push({ kind: "text", id: "cover-title", x: 0.075, y: 0.42, w: 0.58, h: 0.22, text: slide.headline, fontSize: fitFont(slide.headline, 40, 27, 30), fontWeight: 800, fontFace: family.fontDisplay, color: treatment.ink });
+    elements.push({ kind: "text", id: "cover-subtitle", x: 0.08, y: 0.69, w: 0.46, h: 0.06, text: slide.subheadline, fontSize: 14, fontFace: family.fontBody, color: treatment.muted });
+    elements.push({ kind: "shape", id: "cover-coral-block", x: 0.72, y: 0.17, w: 0.13, h: 0.13, fill: treatment.coral, solidFill: treatment.coral, rotate: 45 });
+    addWireDiamond(elements, "cover-diamond-large", 0.69, 0.35, 0.27, treatment, 0.7);
+    addWireDiamond(elements, "cover-diamond-small", 0.78, 0.6, 0.12, treatment);
+    elements.push({ kind: "line", id: "cover-rule", x: 0.08, y: 0.81, w: 0.15, h: 0.003, color: treatment.coral, strokeWidth: 3 });
+  } else if (slide.layoutKind === "hero") {
     const salesHero = treatment.direction === "sales" && imagePath;
     addHeader(elements, slide, family, treatment, { width: imagePath ? (salesHero ? 0.43 : 0.48) : 0.58, y: salesHero ? 0.22 : 0.24, size: 34, subtitleY: salesHero ? 0.46 : 0.48 });
     if (imagePath) addImage(elements, "hero-image", imagePath, imageAssetId, salesHero ? 0.57 : 0.63, salesHero ? 0.13 : 0.17, salesHero ? 0.34 : 0.27, salesHero ? 0.7 : 0.62, treatment);
@@ -239,6 +248,10 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
     elements.push({ kind: "line", id: "cta-rule", x: 0.08, y: 0.64, w: 0.18, h: 0.004, color: treatment.coral, strokeWidth: 3 });
     elements.push({ kind: "text", id: "cta-action", x: 0.08, y: 0.69, w: 0.45, h: 0.045, text: slide.ctaText || "Schedule your implementation planning call.", fontSize: 15, fontWeight: 800, color: treatment.ink });
     if (slide.ctaSubtext || slide.contactLine) elements.push({ kind: "text", id: "cta-subtext", x: 0.08, y: 0.77, w: 0.46, h: 0.035, text: slide.ctaSubtext || slide.contactLine, fontSize: 11, color: treatment.muted });
+    if (slide.id === "kalpa-contact") {
+      elements.push({ kind: "image", id: "cta-logo", x: 0.76, y: 0.68, w: 0.08, h: 0.16, src: "/kalpa-logo.png" });
+      elements.push({ kind: "text", id: "cta-email", x: 0.08, y: 0.82, w: 0.44, h: 0.03, text: "sales@kalpainc.com", fontSize: 12, fontWeight: 800, color: treatment.ink });
+    }
   }
 
   return { slide, family, elements };
