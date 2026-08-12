@@ -5,7 +5,7 @@ import { normalizeSlideForRender } from "@/lib/slides/normalize";
 
 export type RenderElement =
   | { kind: "text"; id: string; x: number; y: number; w: number; h: number; text: string; fontSize: number; fontWeight?: number; fontFace?: string; color: string; align?: "left" | "center" | "right"; opacity?: number }
-  | { kind: "shape"; id: string; x: number; y: number; w: number; h: number; fill: string; solidFill?: string; radius?: number; stroke?: string; strokeWidth?: number; rotate?: number; variant?: "parallelogram" }
+  | { kind: "shape"; id: string; x: number; y: number; w: number; h: number; fill: string; solidFill?: string; fillTransparency?: number; radius?: number; stroke?: string; strokeWidth?: number; strokeTransparency?: number; rotate?: number; variant?: "parallelogram"; shadow?: boolean }
   | { kind: "line"; id: string; x: number; y: number; w: number; h: number; color: string; strokeWidth: number }
   | { kind: "image"; id: string; x: number; y: number; w: number; h: number; src: string; assetId?: string; radius?: number; fit?: "cover" | "contain" };
 
@@ -118,8 +118,42 @@ function addHeader(elements: RenderElement[], slide: SlideContent, family: Famil
 }
 
 function addImage(elements: RenderElement[], id: string, src: string, assetId: string, x: number, y: number, w: number, h: number, treatment: Treatment) {
-  elements.push({ kind: "shape", id: `${id}-edge`, x: x - 0.01, y: y - 0.01, w: w + 0.02, h: h + 0.02, fill: treatment.card, solidFill: treatment.card, stroke: treatment.coral, strokeWidth: 1 });
+  addCrystalGelCard(elements, `${id}-edge`, x - 0.012, y - 0.012, w + 0.024, h + 0.024, treatment, 0.08);
   elements.push({ kind: "image", id, x, y, w, h, src, assetId, radius: 0 });
+}
+
+function addCrystalGelCard(elements: RenderElement[], id: string, x: number, y: number, w: number, h: number, treatment: Treatment, radius = 0.14) {
+  const dark = treatment.dark;
+  const fill = dark ? "rgba(84, 188, 218, 0.20)" : "rgba(219, 240, 248, 0.82)";
+  const solidFill = dark ? "#54BCDA" : "#DBF0F8";
+  elements.push({
+    kind: "shape",
+    id,
+    x,
+    y,
+    w,
+    h,
+    fill,
+    solidFill,
+    fillTransparency: dark ? 80 : 18,
+    stroke: dark ? "#D9F6FF" : "#7DB8CE",
+    strokeWidth: 1,
+    strokeTransparency: dark ? 58 : 22,
+    radius,
+    shadow: true
+  });
+  elements.push({
+    kind: "shape",
+    id: `${id}-glint`,
+    x: x + w * 0.055,
+    y: y + h * 0.055,
+    w: w * 0.89,
+    h: Math.min(h * 0.16, 0.035),
+    fill: "rgba(255, 255, 255, 0.34)",
+    solidFill: "#FFFFFF",
+    fillTransparency: 66,
+    radius: Math.max(0.04, radius * 0.7)
+  });
 }
 
 function addEditorialList(elements: RenderElement[], items: string[], treatment: Treatment, x: number, y: number, width: number) {
@@ -176,8 +210,7 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
     const cards = slide.bullets.slice(0, 3);
     cards.forEach((item, index) => {
       const x = 0.075 + index * 0.285;
-      const pillarFill = treatment.dark ? treatment.card : treatment.direction === "editorial" && index === 1 ? "#F8E4D8" : "#FFFFFF";
-      elements.push({ kind: "shape", id: `pillar-${index}`, x, y: 0.53, w: 0.24, h: 0.25, fill: pillarFill, solidFill: pillarFill, stroke: treatment.line, strokeWidth: 1, radius: 0.14 });
+      addCrystalGelCard(elements, `pillar-${index}`, x, 0.53, 0.24, 0.25, treatment);
       elements.push({ kind: "shape", id: `pillar-signal-${index}`, x: x + 0.025, y: 0.575, w: 0.026, h: 0.026, fill: index === 1 ? treatment.coral : treatment.primary, solidFill: index === 1 ? treatment.coral : treatment.primary, rotate: 45 });
       elements.push({ kind: "text", id: `pillar-number-${index}`, x: x + 0.065, y: 0.575, w: 0.13, h: 0.025, text: `0${index + 1}`, fontSize: 9, fontWeight: 800, color: treatment.muted });
       elements.push({ kind: "text", id: `pillar-copy-${index}`, x: x + 0.025, y: 0.635, w: 0.19, h: 0.1, text: item, fontSize: fitFont(item, 13, 11, 36), fontWeight: 700, color: treatment.ink });
@@ -189,7 +222,7 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
       addHeader(elements, slide, family, treatment, { width: 0.64, y: 0.2, size: 28, subtitleY: 0.4 });
       slide.stats.slice(0, 3).forEach((stat, index) => {
         const x = 0.075 + index * 0.29;
-        elements.push({ kind: "shape", id: `data-stat-${index}`, x, y: 0.56, w: 0.24, h: 0.2, fill: treatment.card, solidFill: treatment.card, stroke: treatment.line, strokeWidth: 1 });
+        addCrystalGelCard(elements, `data-stat-${index}`, x, 0.56, 0.24, 0.2, treatment);
         elements.push({ kind: "text", id: `data-stat-value-${index}`, x: x + 0.025, y: 0.595, w: 0.19, h: 0.065, text: stat.value, fontSize: fitFont(stat.value, 27, 17, 7), fontWeight: 800, fontFace: family.fontDisplay, color: treatment.primary });
         elements.push({ kind: "text", id: `data-stat-label-${index}`, x: x + 0.025, y: 0.685, w: 0.19, h: 0.035, text: stat.label, fontSize: 10, fontWeight: 700, color: treatment.muted });
       });
@@ -227,7 +260,7 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
     [[0.075, slide.leftColumnTitle, slide.leftColumnPoints, "today", "#FFFFFF"], [0.52, slide.rightColumnTitle, slide.rightColumnPoints, "future", treatment.card]].forEach(([rawX, heading, points, id, fill]) => {
       const x = rawX as number;
       const list = points as string[];
-      elements.push({ kind: "shape", id: `${id}-panel`, x, y: 0.53, w: 0.35, h: 0.31, fill: fill as string, solidFill: fill as string, stroke: treatment.line, strokeWidth: 1, radius: 0.12 });
+      addCrystalGelCard(elements, `${id}-panel`, x, 0.53, 0.35, 0.31, treatment, 0.12);
       elements.push({ kind: "line", id: `${id}-rule`, x: x + 0.025, y: 0.59, w: 0.07, h: 0.003, color: id === "future" ? treatment.coral : treatment.primary, strokeWidth: 3 });
       elements.push({ kind: "text", id: `${id}-heading`, x: x + 0.025, y: 0.625, w: 0.28, h: 0.035, text: heading as string, fontSize: 15, fontWeight: 800, color: treatment.ink });
       list.slice(0, 4).forEach((item, index) => elements.push({ kind: "text", id: `${id}-point-${index}`, x: x + 0.025, y: 0.69 + index * 0.043, w: 0.29, h: 0.038, text: `• ${item}`, fontSize: fitFont(item, 11, 9, 32), color: treatment.ink }));

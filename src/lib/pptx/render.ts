@@ -43,10 +43,11 @@ export async function renderProjectPptx(project: ProjectRecord) {
           rectRadius: element.radius ? 0.08 : undefined,
           fill: {
             color: pptColor(element.solidFill || (element.fill.startsWith("#") ? element.fill : theme.panelSolid)),
-            transparency: element.fill.startsWith("rgba") ? 16 : 0
+            transparency: element.fillTransparency ?? (element.fill.startsWith("rgba") ? 16 : 0)
           },
-          line: { color: pptColor(element.stroke || theme.line), width: element.strokeWidth || 0 },
-          rotate: element.rotate
+          line: { color: pptColor(element.stroke || theme.line), width: element.strokeWidth || 0, transparency: element.strokeTransparency },
+          rotate: element.rotate,
+          shadow: element.shadow ? { type: "outer", color: "001D2A", opacity: 0.16, blur: 1.5, angle: 45, offset: 1 } : undefined
         });
       }
 

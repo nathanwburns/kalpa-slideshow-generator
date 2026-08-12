@@ -48,7 +48,9 @@ export function SlidePreview({ projectId, slide, assets, templateFamily, classNa
                 borderRadius: element.radius ? `${element.radius * 100}%` : undefined,
                 border: element.stroke ? `1px solid ${element.stroke}` : undefined,
                 transform: element.rotate ? `rotate(${element.rotate}deg)` : undefined,
-                clipPath: element.variant === "parallelogram" ? "polygon(24% 0, 100% 0, 76% 100%, 0 100%)" : undefined
+                clipPath: element.variant === "parallelogram" ? "polygon(24% 0, 100% 0, 76% 100%, 0 100%)" : undefined,
+                boxShadow: element.shadow ? "0 1.1cqw 2.4cqw rgba(5, 34, 48, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.45)" : undefined,
+                backdropFilter: element.shadow ? "blur(0.7cqw) saturate(1.12)" : undefined
               }}
             />
           );

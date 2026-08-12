@@ -57,7 +57,8 @@ to believe or a concise evidence list.
 ### Pillars
 
 Warm-white three-part slide. Three cards are acceptable only when they represent
-three genuinely parallel ideas. Cards are flat, roomy, and lightly bordered.
+three genuinely parallel ideas. Cards use the crystal-gel surface: roomy, tinted,
+and lightly highlighted rather than opaque white.
 
 ### Process
 
@@ -85,3 +86,11 @@ The call to action is content, not a generic button component.
 - No more than one major decorative motif per slide.
 - No arbitrary card grids to fill empty space.
 - No text overlap, clipping, or placeholder-like empty image areas.
+## Crystal Gel Surfaces
+
+Reusable information surfaces use the Kalpa crystal-gel treatment inspired by the visual-composition patterns explored in HyperFrames: a translucent Kalpa-blue tint, controlled highlight glint, fine edge, and restrained depth. Use these for pillars, comparisons, metric modules, and image frames instead of opaque white UI cards.
+
+- Light surfaces: pale blue glass with enough opacity for readable navy copy.
+- Dark surfaces: translucent cyan gel with a high-contrast white edge and glint.
+- Keep the treatment for information containers, not every decorative element.
+- Export the gel as editable layered PowerPoint shapes. Browser blur is decorative only; the tint, highlight, edge, and shadow are all preserved in the PPTX.

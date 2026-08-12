@@ -150,6 +150,7 @@ describe("schema validation", () => {
       quote: "", quoteAttribution: "", ctaText: "", ctaSubtext: "", contactLine: "", imageAssetIds: [], notes: ""
     }, "strategic-frameworks", []);
 
-    expect(resolved.elements.find((element) => element.id === "pillar-0")).toMatchObject({ kind: "shape", h: 0.25, radius: 0.14 });
+    expect(resolved.elements.find((element) => element.id === "pillar-0")).toMatchObject({ kind: "shape", h: 0.25, radius: 0.14, shadow: true, fillTransparency: 18 });
+    expect(resolved.elements.find((element) => element.id === "pillar-0-glint")).toMatchObject({ kind: "shape", solidFill: "#FFFFFF" });
   });
 });
