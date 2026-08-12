@@ -36,7 +36,8 @@ export async function renderProjectPptx(project: ProjectRecord) {
             color: (element.solidFill || (element.fill.startsWith("#") ? element.fill : theme.panelSolid)).replace("#", ""),
             transparency: element.fill.startsWith("rgba") ? 16 : 0
           },
-          line: { color: (element.stroke || theme.line).replace("#", ""), width: element.strokeWidth || 0 }
+          line: { color: (element.stroke || theme.line).replace("#", ""), width: element.strokeWidth || 0 },
+          rotate: element.rotate
         });
       }
 

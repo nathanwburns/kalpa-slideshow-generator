@@ -45,7 +45,8 @@ export function SlidePreview({ projectId, slide, assets, templateFamily, classNa
                 ...common,
                 background: element.fill,
                 borderRadius: element.radius ? `${element.radius}px` : undefined,
-                border: element.stroke ? `1px solid ${element.stroke}` : undefined
+                border: element.stroke ? `1px solid ${element.stroke}` : undefined,
+                transform: element.rotate ? `rotate(${element.rotate}deg)` : undefined
               }}
             />
           );
