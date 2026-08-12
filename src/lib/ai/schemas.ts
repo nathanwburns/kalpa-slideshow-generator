@@ -92,7 +92,8 @@ export const themeConceptsJsonSchema = {
                 "blue-architectural",
                 "editorial-signal",
                 "strategic-frameworks",
-                "human-centered-sales"
+                "human-centered-sales",
+                "dark-data-executive"
               ]
             }
           },

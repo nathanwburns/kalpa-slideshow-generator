@@ -12,6 +12,7 @@ export type RenderElement =
 export type ResolvedSlide = { slide: SlideContent; family: FamilyTheme; elements: RenderElement[] };
 
 type Treatment = {
+  direction: "architectural" | "editorial" | "strategic" | "sales" | "data";
   dark: boolean;
   canvas: string;
   ink: string;
@@ -47,11 +48,44 @@ function isDarkSlide(slide: SlideContent) {
   return ["hero", "challenge", "process", "cta"].includes(slide.layoutKind);
 }
 
-function treatmentFor(slide: SlideContent): Treatment {
-  const dark = isDarkSlide(slide);
+function treatmentFor(slide: SlideContent, familyId: TemplateFamilyId): Treatment {
+  const direction = familyId === "blue-architectural"
+    ? "architectural"
+    : familyId === "editorial-signal"
+      ? "editorial"
+      : familyId === "strategic-frameworks"
+        ? "strategic"
+        : familyId === "dark-data-executive"
+          ? "data"
+          : "sales";
+
+  const dark = direction === "data" || (direction === "architectural" ? isDarkSlide(slide) || slide.layoutKind === "proof" : ["hero", "cta"].includes(slide.layoutKind));
+
+  if (direction === "data") {
+    return { direction, dark, canvas: "#041E2A", ink: "#FFFFFF", muted: "#BFE0E8", primary: "#55C7E8", coral: "#F28A4B", card: "#0A3444", line: "#397C8D" };
+  }
+
+  if (direction === "architectural") {
+    return dark
+      ? { direction, dark, canvas: "#062C47", ink: "#FFFFFF", muted: "#B8D3E4", primary: "#6EC4E8", coral: "#F28A4B", card: "#0D4261", line: "#4D7B93" }
+      : { direction, dark, canvas: "#F4F8FA", ink: "#082C44", muted: "#567181", primary: "#007EBA", coral: "#F28A4B", card: "#E6F0F5", line: "#C6D9E4" };
+  }
+
+  if (direction === "editorial") {
+    return dark
+      ? { direction, dark, canvas: "#24313B", ink: "#FFFFFF", muted: "#D8D0C5", primary: "#FFFFFF", coral: "#F17658", card: "#374650", line: "#6B7880" }
+      : { direction, dark, canvas: "#FBF6EE", ink: "#263541", muted: "#66727C", primary: "#0F6E9C", coral: "#E96F50", card: "#F3E9DC", line: "#D7CABC" };
+  }
+
+  if (direction === "strategic") {
+    return dark
+      ? { direction, dark, canvas: "#103044", ink: "#FFFFFF", muted: "#C7D9E4", primary: "#75C7E8", coral: "#F17E54", card: "#1B465D", line: "#638399" }
+      : { direction, dark, canvas: "#F3F8FB", ink: "#0E293B", muted: "#5D7381", primary: "#087DB8", coral: "#EC7C53", card: "#E5F0F6", line: "#BBD0DD" };
+  }
+
   return dark
-    ? { dark, canvas: kalpa.navy, ink: "#FFFFFF", muted: "#BBD0D7", primary: "#FFFFFF", coral: kalpa.coral, card: "#0A4A60", line: "#397083" }
-    : { dark, canvas: kalpa.paper, ink: kalpa.ink, muted: "#5F7480", primary: kalpa.blue, coral: kalpa.coral, card: "#F0F4F3", line: kalpa.lightLine };
+    ? { direction, dark, canvas: kalpa.navy, ink: "#FFFFFF", muted: "#BBD0D7", primary: "#FFFFFF", coral: kalpa.coral, card: "#0A4A60", line: "#397083" }
+    : { direction, dark, canvas: "#FCFAF6", ink: kalpa.ink, muted: "#5F7480", primary: kalpa.blue, coral: kalpa.coral, card: "#EAF2F5", line: "#D1E0E6" };
 }
 
 function addBackground(elements: RenderElement[], treatment: Treatment) {
@@ -99,7 +133,7 @@ function addEditorialList(elements: RenderElement[], items: string[], treatment:
 export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamilyId, assets: AssetRecord[]): ResolvedSlide {
   const slide = normalizeSlideForRender(sourceSlide);
   const family = familyThemes[familyId];
-  const treatment = treatmentFor(slide);
+  const treatment = treatmentFor(slide, familyId);
   const imageAssetId = slide.imageAssetIds[0] || "";
   const imagePath = imageAssetId ? assetPath(imageAssetId, assets) : "";
   const elements: RenderElement[] = [];
@@ -107,14 +141,15 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
   addBrand(elements, slide, family, treatment);
 
   if (slide.layoutKind === "hero") {
-    addHeader(elements, slide, family, treatment, { width: imagePath ? 0.48 : 0.58, y: 0.24, size: 34, subtitleY: 0.48 });
-    if (imagePath) addImage(elements, "hero-image", imagePath, imageAssetId, 0.63, 0.17, 0.27, 0.62, treatment);
+    const salesHero = treatment.direction === "sales" && imagePath;
+    addHeader(elements, slide, family, treatment, { width: imagePath ? (salesHero ? 0.43 : 0.48) : 0.58, y: salesHero ? 0.22 : 0.24, size: 34, subtitleY: salesHero ? 0.46 : 0.48 });
+    if (imagePath) addImage(elements, "hero-image", imagePath, imageAssetId, salesHero ? 0.57 : 0.63, salesHero ? 0.13 : 0.17, salesHero ? 0.34 : 0.27, salesHero ? 0.7 : 0.62, treatment);
     else {
       addWireDiamond(elements, "hero-diamond-a", 0.7, 0.27, 0.19, treatment, 0.7);
       addWireDiamond(elements, "hero-diamond-b", 0.77, 0.35, 0.12, treatment);
       elements.push({ kind: "shape", id: "hero-signal", x: 0.77, y: 0.39, w: 0.06, h: 0.06, fill: treatment.coral, solidFill: treatment.coral, rotate: 45 });
     }
-    addEditorialList(elements, slide.bullets, treatment, 0.08, 0.64, imagePath ? 0.43 : 0.5);
+    addEditorialList(elements, slide.bullets, treatment, 0.08, salesHero ? 0.66 : 0.64, imagePath ? (salesHero ? 0.4 : 0.43) : 0.5);
   }
 
   if (slide.layoutKind === "challenge") {
@@ -132,7 +167,8 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
     const cards = slide.bullets.slice(0, 3);
     cards.forEach((item, index) => {
       const x = 0.075 + index * 0.285;
-      elements.push({ kind: "shape", id: `pillar-${index}`, x, y: 0.55, w: 0.24, h: 0.22, fill: "#FFFFFF", solidFill: "#FFFFFF", stroke: treatment.line, strokeWidth: 1 });
+      const pillarFill = treatment.dark ? treatment.card : treatment.direction === "editorial" && index === 1 ? "#F8E4D8" : "#FFFFFF";
+      elements.push({ kind: "shape", id: `pillar-${index}`, x, y: 0.55, w: 0.24, h: 0.22, fill: pillarFill, solidFill: pillarFill, stroke: treatment.line, strokeWidth: 1 });
       elements.push({ kind: "shape", id: `pillar-signal-${index}`, x: x + 0.025, y: 0.575, w: 0.026, h: 0.026, fill: index === 1 ? treatment.coral : treatment.primary, solidFill: index === 1 ? treatment.coral : treatment.primary, rotate: 45 });
       elements.push({ kind: "text", id: `pillar-number-${index}`, x: x + 0.065, y: 0.575, w: 0.13, h: 0.025, text: `0${index + 1}`, fontSize: 9, fontWeight: 800, color: treatment.muted });
       elements.push({ kind: "text", id: `pillar-copy-${index}`, x: x + 0.025, y: 0.64, w: 0.19, h: 0.08, text: item, fontSize: fitFont(item, 12, 10, 32), fontWeight: 700, color: treatment.ink });
@@ -140,7 +176,15 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
   }
 
   if (slide.layoutKind === "proof") {
-    if (slide.stats.length) {
+    if (slide.stats.length && treatment.direction === "data") {
+      addHeader(elements, slide, family, treatment, { width: 0.64, y: 0.2, size: 28, subtitleY: 0.4 });
+      slide.stats.slice(0, 3).forEach((stat, index) => {
+        const x = 0.075 + index * 0.29;
+        elements.push({ kind: "shape", id: `data-stat-${index}`, x, y: 0.56, w: 0.24, h: 0.2, fill: treatment.card, solidFill: treatment.card, stroke: treatment.line, strokeWidth: 1 });
+        elements.push({ kind: "text", id: `data-stat-value-${index}`, x: x + 0.025, y: 0.595, w: 0.19, h: 0.065, text: stat.value, fontSize: fitFont(stat.value, 27, 17, 7), fontWeight: 800, fontFace: family.fontDisplay, color: treatment.primary });
+        elements.push({ kind: "text", id: `data-stat-label-${index}`, x: x + 0.025, y: 0.685, w: 0.19, h: 0.035, text: stat.label, fontSize: 10, fontWeight: 700, color: treatment.muted });
+      });
+    } else if (slide.stats.length) {
       const primaryStat = slide.stats[0];
       elements.push({ kind: "text", id: "proof-overline", x: 0.08, y: 0.22, w: 0.26, h: 0.025, text: slide.eyebrow || "BATTLE-TESTED EXPERTISE", fontSize: 9, fontWeight: 800, color: treatment.coral });
       elements.push({ kind: "text", id: "proof-primary-stat", x: 0.08, y: 0.3, w: 0.38, h: 0.19, text: primaryStat.value, fontSize: fitFont(primaryStat.value, 58, 34, 7), fontWeight: 800, fontFace: family.fontDisplay, color: treatment.ink });
@@ -159,11 +203,12 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
     const count = Math.max(1, Math.min(5, slide.steps.length));
     const start = count === 5 ? 0.1 : 0.16;
     const gap = count === 5 ? 0.17 : 0.21;
-    elements.push({ kind: "line", id: "process-line", x: start + 0.03, y: 0.65, w: gap * (count - 1), h: 0.003, color: treatment.line, strokeWidth: 2 });
+    elements.push({ kind: "line", id: "process-line", x: start + 0.03, y: 0.65, w: gap * (count - 1), h: 0.003, color: treatment.direction === "strategic" ? treatment.primary : treatment.line, strokeWidth: treatment.direction === "strategic" ? 3 : 2 });
     slide.steps.slice(0, 5).forEach((step, index) => {
       const x = start + index * gap;
-      elements.push({ kind: "shape", id: `process-diamond-${index}`, x, y: 0.6, w: 0.06, h: 0.06, fill: index < 4 ? treatment.coral : kalpa.deepNavy, solidFill: index < 4 ? treatment.coral : kalpa.deepNavy, stroke: index === 4 ? treatment.line : undefined, strokeWidth: 1, rotate: 45 });
-      elements.push({ kind: "text", id: `process-number-${index}`, x: x + 0.013, y: 0.615, w: 0.034, h: 0.018, text: String(index + 1).padStart(2, "0"), fontSize: 7, fontWeight: 800, color: "#FFFFFF", align: "center" });
+      const processFill = treatment.direction === "strategic" ? "#FFFFFF" : index < 4 ? treatment.coral : kalpa.deepNavy;
+      elements.push({ kind: "shape", id: `process-diamond-${index}`, x, y: 0.6, w: 0.06, h: 0.06, fill: processFill, solidFill: processFill, stroke: treatment.direction === "strategic" ? treatment.primary : index === 4 ? treatment.line : undefined, strokeWidth: 1, rotate: 45 });
+      elements.push({ kind: "text", id: `process-number-${index}`, x: x + 0.013, y: 0.615, w: 0.034, h: 0.018, text: String(index + 1).padStart(2, "0"), fontSize: 7, fontWeight: 800, color: treatment.direction === "strategic" ? treatment.primary : "#FFFFFF", align: "center" });
       elements.push({ kind: "text", id: `process-title-${index}`, x: x - 0.045, y: 0.72, w: 0.15, h: 0.04, text: step, fontSize: fitFont(step, 10, 8, 19), fontWeight: 700, color: treatment.ink, align: "center" });
     });
   }

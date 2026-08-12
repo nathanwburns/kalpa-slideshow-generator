@@ -72,7 +72,7 @@ export function normalizeSlideForRender(slide: SlideContent): SlideContent {
   };
 
   if (normalized.layoutKind === "hero") {
-    const heroBullets = cleanList(normalized.bullets, 3, 74);
+    const heroBullets = cleanList(normalized.bullets, 3, 58);
     return {
       ...normalized,
       subheadline: normalized.subheadline || clipText(heroBullets[0] || normalized.purpose, 150),
@@ -80,8 +80,8 @@ export function normalizeSlideForRender(slide: SlideContent): SlideContent {
     };
   }
 
-  if (normalized.layoutKind === "challenge" || normalized.layoutKind === "industry-grid") {
-    const bullets = cleanList(normalized.bullets.length ? normalized.bullets : normalized.steps, 4, 64);
+  if (normalized.layoutKind === "challenge") {
+    const bullets = cleanList(normalized.bullets.length ? normalized.bullets : normalized.steps, 3, 52);
     return {
       ...normalized,
       bullets,
@@ -89,10 +89,19 @@ export function normalizeSlideForRender(slide: SlideContent): SlideContent {
     };
   }
 
+  if (normalized.layoutKind === "industry-grid") {
+    const bullets = cleanList(normalized.bullets.length ? normalized.bullets : normalized.steps, 3, 42);
+    return {
+      ...normalized,
+      bullets,
+      subheadline: normalized.subheadline || clipText(cleanLine(normalized.purpose), 96)
+    };
+  }
+
   if (normalized.layoutKind === "proof") {
     return {
       ...normalized,
-      bullets: cleanList(normalized.bullets, 3, 60),
+      bullets: cleanList(normalized.bullets, 3, 48),
       stats: normalized.stats.slice(0, 3)
     };
   }
@@ -102,7 +111,7 @@ export function normalizeSlideForRender(slide: SlideContent): SlideContent {
     return {
       ...normalized,
       steps,
-      bullets: cleanList(normalized.bullets, 4, 54)
+      bullets: cleanList(normalized.bullets, 4, 42)
     };
   }
 

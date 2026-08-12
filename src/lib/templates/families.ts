@@ -116,5 +116,28 @@ export const familyThemes: Record<TemplateFamilyId, FamilyTheme> = {
     badgeInk: "#102132",
     fontDisplay: "Sora",
     fontBody: "Inter"
+  },
+  "dark-data-executive": {
+    id: "dark-data-executive",
+    name: "Dark Data Executive",
+    description: "High-contrast executive reporting with concise metrics, cyan signals, and disciplined orange emphasis.",
+    canvas: "linear-gradient(135deg, #041E2A 0%, #06384A 58%, #064E64 100%)",
+    canvasSolid: "#041E2A",
+    panel: "rgba(255,255,255,0.07)",
+    panelSolid: "#0A3444",
+    ink: "#FFFFFF",
+    muted: "rgba(222,241,246,0.76)",
+    accent: "#55C7E8",
+    signal: "#F28A4B",
+    accentSoft: "rgba(85,199,232,0.18)",
+    line: "rgba(194,231,240,0.24)",
+    card: "rgba(255,255,255,0.08)",
+    cardSolid: "#0A3444",
+    frame: "rgba(194,231,240,0.28)",
+    edge: "rgba(194,231,240,0.18)",
+    badgeBg: "rgba(85,199,232,0.14)",
+    badgeInk: "#FFFFFF",
+    fontDisplay: "Sora",
+    fontBody: "Inter"
   }
 };

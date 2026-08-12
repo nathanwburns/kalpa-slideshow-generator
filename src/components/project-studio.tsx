@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { SlidePreview } from "@/components/slide-preview";
 import { familyThemes } from "@/lib/templates/families";
 import type { AdminSettings, OutlineItem, ProjectRecord, ThemeConcept } from "@/lib/schema";
@@ -47,6 +47,12 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
   );
   const activeOutlineIndex = activeOutline ? project.outline.findIndex((item) => item.id === activeOutline.id) : -1;
 
+  const goToSlide = useCallback((offset: -1 | 1) => {
+    if (!project.slides.length) return;
+    const nextIndex = activeSlideIndex < 0 ? 0 : (activeSlideIndex + offset + project.slides.length) % project.slides.length;
+    setActiveSlideId(project.slides[nextIndex].id);
+  }, [activeSlideIndex, project.slides]);
+
   const selectedTheme = useMemo(
     () => project.themeConcepts.find((item) => item.id === project.selectedThemeConceptId) || project.themeConcepts[0] || null,
     [project.selectedThemeConceptId, project.themeConcepts]
@@ -58,13 +64,7 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
     }
   }, [project.outline.length, project.slides.length, workspaceMode]);
 
-  useEffect(() => {
-    if (!fullscreenPreview) return;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    function handleKeydown(event: KeyboardEvent) {
+  const handleFullscreenKeydown = useCallback((event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setFullscreenPreview(false);
         return;
@@ -79,14 +79,20 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
         event.preventDefault();
         goToSlide(1);
       }
-    }
+  }, [goToSlide]);
 
-    window.addEventListener("keydown", handleKeydown);
+  useEffect(() => {
+    if (!fullscreenPreview) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    window.addEventListener("keydown", handleFullscreenKeydown);
     return () => {
       document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", handleKeydown);
+      window.removeEventListener("keydown", handleFullscreenKeydown);
     };
-  }, [fullscreenPreview, activeSlideIndex, project.slides.length]);
+  }, [fullscreenPreview, handleFullscreenKeydown]);
 
   async function reloadProject(projectId: string) {
     const response = await fetch(`/api/v1/projects/${projectId}`);
@@ -290,12 +296,6 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
     } finally {
       setBusy(null);
     }
-  }
-
-  function goToSlide(offset: -1 | 1) {
-    if (!project.slides.length) return;
-    const nextIndex = activeSlideIndex < 0 ? 0 : (activeSlideIndex + offset + project.slides.length) % project.slides.length;
-    setActiveSlideId(project.slides[nextIndex].id);
   }
 
   function renderDeckPreview(expanded: boolean) {

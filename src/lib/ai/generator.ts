@@ -62,8 +62,9 @@ function composeSlideDesignPrompt() {
     "Prefer one dominant idea per slide and leave visual breathing room.",
     "Content budgets by layout:",
     "- hero: headline <= 10 words, subheadline <= 20 words, max 3 bullets",
-    "- challenge or industry-grid: max 4 cards, each card <= 12 words",
-    "- proof: max 3 stats, each label <= 4 words, or max 3 evidence bullets",
+    "- challenge: max 3 editorial points, each <= 10 words; do not turn every point into a card",
+    "- industry-grid: exactly 3 pillars, each <= 8 words",
+    "- proof: max 3 stats, each label <= 4 words, or max 3 evidence bullets of <= 9 words",
     "- process: max 4 steps, each step <= 5 words",
     "- comparison: max 4 bullets per column, each bullet <= 10 words",
     "- quote: one quote and one short attribution",
@@ -71,7 +72,8 @@ function composeSlideDesignPrompt() {
     "Use imageAssetIds only for real image files. Use at most one image per slide.",
     "If suitable image assets exist, prioritize them on hero, proof, challenge, industry-grid, or CTA slides.",
     "If there is no suitable image asset, do not imply a photo-dependent composition; favor a strong text-and-shape layout instead.",
-    "Prefer whitespace, hierarchy, and restraint over filling every field."
+    "Never use generic button labels, fake controls, or dense dashboard components as slide content.",
+    "Prefer whitespace, hierarchy, and restraint over filling every field. If an idea does not fit its content budget, rewrite it rather than shrinking it."
   ].join("\n");
 }
 

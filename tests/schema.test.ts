@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { briefSchema, slideContentSchema, type SlideContent } from "@/lib/schema";
-import { finalizeSlidesForRender } from "@/lib/slides/normalize";
+import { finalizeSlidesForRender, normalizeSlideForRender } from "@/lib/slides/normalize";
 
 describe("schema validation", () => {
   it("accepts a valid brief", () => {
@@ -73,5 +73,39 @@ describe("schema validation", () => {
     ]);
 
     expect(rendered.map((slide) => slide.imageAssetIds[0] || "")).toEqual(["asset_1", "asset_2", ""]);
+  });
+
+  it("keeps dense framework copy within the renderer's safe card budget", () => {
+    const rendered = normalizeSlideForRender({
+      id: "slide_grid",
+      sequence: 1,
+      purpose: "Explain the operating model pillars in practical terms.",
+      layoutKind: "industry-grid",
+      eyebrow: "Operating model",
+      headline: "Three changes that create reliable execution",
+      subheadline: "",
+      bullets: [
+        "A long operational pillar that cannot fit cleanly inside a compact presentation card without being rewritten",
+        "Standardize ownership across purchasing, warehouse operations, finance, and customer service handoffs",
+        "Build trusted reporting from a single operational source of truth",
+        "This fourth point must not be rendered because the layout has three pillars"
+      ],
+      stats: [],
+      steps: [],
+      leftColumnTitle: "",
+      leftColumnPoints: [],
+      rightColumnTitle: "",
+      rightColumnPoints: [],
+      quote: "",
+      quoteAttribution: "",
+      ctaText: "",
+      ctaSubtext: "",
+      contactLine: "",
+      imageAssetIds: [],
+      notes: ""
+    });
+
+    expect(rendered.bullets).toHaveLength(3);
+    expect(rendered.bullets.every((bullet) => bullet.length <= 42)).toBe(true);
   });
 });
