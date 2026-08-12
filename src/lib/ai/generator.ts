@@ -13,17 +13,30 @@ import type {
   ThemeConcept
 } from "@/lib/schema";
 import { outlineItemSchema, questionSchema, slideContentSchema, themeConceptSchema } from "@/lib/schema";
-import { normalizeSlidesForRender } from "@/lib/slides/normalize";
+import { finalizeSlidesForRender, isImageAsset } from "@/lib/slides/normalize";
 import { clipText } from "@/lib/utils";
 
 function composeAssetContext(assets: AssetRecord[]) {
   return assets
     .map(
       (asset) =>
-        `Asset: ${asset.name}\nType: ${asset.mimeType}\nExtracted text:\n${asset.extractedText || "[no extractable text]"}`
+        `Asset: ${asset.name}\nType: ${asset.mimeType}\nVisual asset: ${isImageAsset(asset) ? "yes" : "no"}\nExtracted text:\n${asset.extractedText || "[no extractable text]"}`
     )
     .join("\n\n---\n\n")
     .slice(0, 18000);
+}
+
+function composeAssetInventory(assets: AssetRecord[]) {
+  return JSON.stringify(
+    assets.map((asset) => ({
+      id: asset.id,
+      name: asset.name,
+      mimeType: asset.mimeType,
+      visual: isImageAsset(asset)
+    })),
+    null,
+    2
+  );
 }
 
 async function loadBrandBookContext() {
@@ -45,14 +58,17 @@ function composeSlideDesignPrompt() {
     "Design like a professional business presentation system, not a generic AI page.",
     "Every slide must fit cleanly into its layout with no text overflow, no overlapping text, and no placeholder-looking empty regions.",
     "Use short executive headlines, concise supporting copy, and only the fields that the selected layout can present well.",
+    "Prefer one dominant idea per slide and leave visual breathing room.",
     "Content budgets by layout:",
-    "- hero: headline <= 12 words, subheadline <= 24 words, max 3 bullets",
-    "- challenge or industry-grid: max 4 cards, each card <= 14 words",
-    "- proof: max 3 stats, each label <= 5 words",
-    "- process: max 4 steps, each step <= 6 words",
-    "- comparison: max 4 bullets per column, each bullet <= 12 words",
+    "- hero: headline <= 10 words, subheadline <= 20 words, max 3 bullets",
+    "- challenge or industry-grid: max 4 cards, each card <= 12 words",
+    "- proof: max 3 stats, each label <= 4 words, or max 3 evidence bullets",
+    "- process: max 4 steps, each step <= 5 words",
+    "- comparison: max 4 bullets per column, each bullet <= 10 words",
     "- quote: one quote and one short attribution",
     "- cta: one short action line and one short subline",
+    "Use imageAssetIds only for real image files. Use at most one image per slide.",
+    "If suitable image assets exist, prioritize them on hero, proof, challenge, industry-grid, or CTA slides.",
     "If there is no suitable image asset, do not imply a photo-dependent composition; favor a strong text-and-shape layout instead.",
     "Prefer whitespace, hierarchy, and restraint over filling every field."
   ].join("\n");
@@ -220,11 +236,7 @@ export async function generateSlides(
           {
             type: "input_text",
             text:
-              `Turn this approved outline into presentation slides.\n\nBrief:\n${JSON.stringify(brief, null, 2)}\n\nSelected theme concept:\n${JSON.stringify(themeConcept || null, null, 2)}\n\nOutline:\n${JSON.stringify(outline, null, 2)}\n\nAvailable assets:\n${JSON.stringify(
-                assets.map((asset) => ({ id: asset.id, name: asset.name, mimeType: asset.mimeType })),
-                null,
-                2
-              )}\n\nSource context:\n${composeAssetContext(assets)}`
+              `Turn this approved outline into presentation slides.\n\nBrief:\n${JSON.stringify(brief, null, 2)}\n\nSelected theme concept:\n${JSON.stringify(themeConcept || null, null, 2)}\n\nOutline:\n${JSON.stringify(outline, null, 2)}\n\nAvailable assets:\n${composeAssetInventory(assets)}\n\nSource context:\n${composeAssetContext(assets)}`
           }
         ]
       }
@@ -238,7 +250,7 @@ export async function generateSlides(
   });
 
   const parsed = await parseStructuredJson(response, z.object({ slides: z.array(slideContentSchema) }));
-  return normalizeSlidesForRender(parsed.slides as SlideContent[]);
+  return finalizeSlidesForRender(parsed.slides as SlideContent[], assets);
 }
 
 export async function editOutline(
@@ -290,6 +302,7 @@ export async function editOutline(
 export async function editSlides(
   instruction: string,
   slides: SlideContent[],
+  assets: AssetRecord[],
   targetSlideId: string | null,
   settings: AdminSettings
 ) {
@@ -315,7 +328,7 @@ export async function editSlides(
           {
             type: "input_text",
             text:
-              `Edit this presentation.\n\nInstruction: ${instruction}\n\nTarget slide ID: ${targetSlideId || "all"}\n\nCurrent slides:\n${JSON.stringify(slides, null, 2)}`
+              `Edit this presentation.\n\nInstruction: ${instruction}\n\nTarget slide ID: ${targetSlideId || "all"}\n\nCurrent slides:\n${JSON.stringify(slides, null, 2)}\n\nAvailable assets:\n${composeAssetInventory(assets)}`
           }
         ]
       }
@@ -329,5 +342,5 @@ export async function editSlides(
   });
 
   const parsed = await parseStructuredJson(response, z.object({ slides: z.array(slideContentSchema) }));
-  return normalizeSlidesForRender(parsed.slides as SlideContent[]);
+  return finalizeSlidesForRender(parsed.slides as SlideContent[], assets);
 }

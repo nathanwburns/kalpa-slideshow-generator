@@ -1,5 +1,8 @@
-import type { SlideContent } from "@/lib/schema";
+import path from "path";
+import type { AssetRecord, SlideContent } from "@/lib/schema";
 import { clipText } from "@/lib/utils";
+
+const imageExtensions = new Set([".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"]);
 
 function cleanLine(value: string) {
   return value.replace(/\s+/g, " ").replace(/^[•\-\s]+/, "").trim();
@@ -129,4 +132,57 @@ export function normalizeSlideForRender(slide: SlideContent): SlideContent {
 
 export function normalizeSlidesForRender(slides: SlideContent[]) {
   return slides.map((slide) => normalizeSlideForRender(slide));
+}
+
+export function isImageAsset(asset: Pick<AssetRecord, "mimeType" | "name" | "path">) {
+  if (asset.mimeType.startsWith("image/")) return true;
+  const extension = path.extname(asset.name || asset.path || "").toLowerCase();
+  return imageExtensions.has(extension);
+}
+
+function imagePriority(slide: SlideContent) {
+  switch (slide.layoutKind) {
+    case "hero":
+      return 0;
+    case "proof":
+      return 1;
+    case "challenge":
+    case "industry-grid":
+      return 2;
+    case "cta":
+      return 3;
+    default:
+      return 10;
+  }
+}
+
+export function finalizeSlidesForRender(slides: SlideContent[], assets: AssetRecord[]) {
+  const imageAssets = assets.filter((asset) => isImageAsset(asset));
+  const validImageIds = new Set(imageAssets.map((asset) => asset.id));
+
+  const normalizedSlides = slides.map((slide) => {
+    const normalized = normalizeSlideForRender(slide);
+    return {
+      ...normalized,
+      imageAssetIds: normalized.imageAssetIds.filter((assetId) => validImageIds.has(assetId)).slice(0, 1)
+    };
+  });
+
+  if (!imageAssets.length) {
+    return normalizedSlides;
+  }
+
+  const candidateIndexes = normalizedSlides
+    .map((slide, index) => ({ slide, index }))
+    .filter(({ slide }) => imagePriority(slide) < 10 && !slide.imageAssetIds.length)
+    .sort((left, right) => imagePriority(left.slide) - imagePriority(right.slide) || left.index - right.index);
+
+  candidateIndexes.forEach(({ index }, candidateIndex) => {
+    normalizedSlides[index] = {
+      ...normalizedSlides[index],
+      imageAssetIds: [imageAssets[candidateIndex % imageAssets.length].id]
+    };
+  });
+
+  return normalizedSlides;
 }

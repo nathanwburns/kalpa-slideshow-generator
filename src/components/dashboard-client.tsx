@@ -127,7 +127,7 @@ export function DashboardClient({ projects }: { projects: ProjectRecord[] }) {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <div className="text-sm font-semibold text-white">Reference files</div>
-                  <div className="text-xs text-white/70">Upload source docs before creating the project. PDF, DOCX, TXT, CSV, MD, and PPTX are supported.</div>
+                  <div className="text-xs text-white/70">Upload source docs or reference visuals before creating the project. PDF, DOCX, TXT, CSV, MD, PPTX, PNG, JPG, WEBP, and GIF are supported.</div>
                 </div>
                 <button
                   className="rounded-full border border-white/25 bg-white/12 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/18"
@@ -141,7 +141,7 @@ export function DashboardClient({ projects }: { projects: ProjectRecord[] }) {
                   className="hidden"
                   type="file"
                   multiple
-                  accept=".txt,.md,.csv,.pdf,.docx,.pptx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/plain,text/markdown,text/csv"
+                  accept=".txt,.md,.csv,.pdf,.docx,.pptx,.png,.jpg,.jpeg,.webp,.gif,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/plain,text/markdown,text/csv,image/png,image/jpeg,image/webp,image/gif"
                   onChange={addFiles}
                 />
               </div>
@@ -162,7 +162,7 @@ export function DashboardClient({ projects }: { projects: ProjectRecord[] }) {
                 </div>
               ) : (
                 <div className="mt-4 rounded-2xl border border-white/12 bg-black/10 px-4 py-3 text-sm text-white/72">
-                  Add a brief, a past proposal, or an existing PowerPoint you want the system to reinterpret into a new Kalpa frame system.
+                  Add a brief, a past proposal, a screenshot, or an existing PowerPoint you want the system to reinterpret into a new Kalpa frame system.
                 </div>
               )}
             </div>

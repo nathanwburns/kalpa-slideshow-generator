@@ -364,9 +364,15 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
           <div className="rounded-[28px] bg-white/85 p-6 shadow-panel">
             <div className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Source files</div>
             <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-              Upload a current proposal, ERP documentation, website copy, or an existing PowerPoint you want remade in a new Kalpa style.
+              Upload a current proposal, ERP documentation, website copy, screenshots, or an existing PowerPoint you want remade in a new Kalpa style.
             </div>
-            <input className="block w-full rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm" type="file" multiple onChange={(event) => uploadFiles(event.target.files)} />
+            <input
+              className="block w-full rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm"
+              type="file"
+              multiple
+              accept=".txt,.md,.csv,.pdf,.docx,.pptx,.png,.jpg,.jpeg,.webp,.gif,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/plain,text/markdown,text/csv,image/png,image/jpeg,image/webp,image/gif"
+              onChange={(event) => uploadFiles(event.target.files)}
+            />
             <div className="mt-4 grid max-h-56 gap-2 overflow-auto pr-1 text-sm text-slate-600">
               {project.assets.length ? (
                 project.assets.map((asset) => (
@@ -378,7 +384,7 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
                 ))
               ) : (
                 <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500">
-                  Upload briefs, PDFs, DOCX files, spreadsheets, or reference decks to ground the AI.
+                  Upload briefs, PDFs, DOCX files, screenshots, or reference decks to ground the AI.
                 </div>
               )}
             </div>
