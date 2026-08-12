@@ -302,7 +302,7 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
     if (!activeSlide) return null;
 
     const frameClassName = expanded
-      ? "fixed inset-0 z-50 flex items-center justify-center bg-slate-950/88 px-6 py-8 backdrop-blur-sm"
+      ? "fixed inset-0 z-50 flex items-center justify-center bg-slate-950/92 px-6 py-8 backdrop-blur-sm"
       : "";
     const stageClassName = expanded
       ? "relative w-full max-w-[min(94vw,1720px)]"
@@ -322,15 +322,17 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
       >
         <div className={stageClassName} onClick={expanded ? (event) => event.stopPropagation() : undefined}>
           {expanded ? (
-            <div className="mb-4 flex items-center justify-between gap-4 text-white">
-              <div>
+            <>
+              <div className="mb-4 flex items-center gap-3 text-white">
                 <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Full-screen preview</div>
-                <div className="text-lg font-bold">Slide {activeSlideIndex + 1} of {project.slides.length}</div>
+                <div className="h-1 w-1 rounded-full bg-white/40" />
+                <div className="text-sm font-bold">Slide {activeSlideIndex + 1} of {project.slides.length}</div>
               </div>
-              <button className={utilityButtonClassName} onClick={() => setFullscreenPreview(false)} type="button">
-                Contract
+              <button aria-label="Minimize slide preview" className="fixed right-7 top-7 z-[60] inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-slate-950 shadow-2xl ring-1 ring-slate-200 transition hover:bg-slate-100" onClick={() => setFullscreenPreview(false)} type="button">
+                <span aria-hidden="true" className="text-lg leading-none">↙</span>
+                Minimize
               </button>
-            </div>
+            </>
           ) : (
             <button className={`absolute right-4 top-4 z-10 ${utilityButtonClassName}`} onClick={() => setFullscreenPreview(true)} type="button">
               Expand
@@ -490,9 +492,10 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
                 {busy === "outline" ? "Generating outline…" : "Generate outline"}
               </button>
               <button className="rounded-full bg-kalpa-peach px-4 py-2 text-sm font-semibold text-white disabled:opacity-50" onClick={generateSlides} disabled={busy !== null || !project.outline.length}>
-                {busy === "slides" ? "Generating slides…" : "Generate slides"}
+                {busy === "slides" ? "Generating slides and visuals…" : "Generate slides + visuals"}
               </button>
             </div>
+            <p className="text-xs leading-5 text-slate-500">When no visual reference is uploaded, Kalpa generates two slide-specific editorial images. Uploaded imagery always takes priority.</p>
 
             {project.questions.length ? (
               <div className="grid gap-3">

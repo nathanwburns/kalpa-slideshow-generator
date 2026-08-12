@@ -68,8 +68,11 @@ export async function renderProjectPptx(project: ProjectRecord) {
       }
 
       if (element.kind === "image" && element.src) {
+        const imagePath = element.assetId
+          ? path.resolve(absoluteDataPath(element.src))
+          : path.join(process.cwd(), "public", element.src.replace(/^\//, ""));
         pptSlide.addImage({
-          path: path.resolve(absoluteDataPath(element.src)),
+          path: imagePath,
           x,
           y,
           w,

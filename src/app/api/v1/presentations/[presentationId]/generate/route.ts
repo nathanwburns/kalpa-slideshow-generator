@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
-import { generateSlides } from "@/lib/ai/generator";
+import { generatePresentationVisuals, generateSlides } from "@/lib/ai/generator";
 import { saveSlides } from "@/lib/data/project-service";
 import { getAdminSettings, getProject } from "@/lib/data/storage";
+import { finalizeSlidesForRender } from "@/lib/slides/normalize";
+import type { AssetRecord } from "@/lib/schema";
 
 export async function POST(_: Request, { params }: { params: Promise<{ presentationId: string }> }) {
   const { presentationId } = await params;
@@ -18,6 +20,19 @@ export async function POST(_: Request, { params }: { params: Promise<{ presentat
     settings,
     selectedTheme
   );
-  const saved = await saveSlides(presentationId, slides, "Generated slide deck");
+  let generatedAssets: AssetRecord[] = [];
+  try {
+    generatedAssets = await generatePresentationVisuals({
+      projectId: presentationId,
+      brief: project.brief,
+      slides,
+      assets: project.assets,
+      settings
+    });
+  } catch (error) {
+    console.error("Kalpa visual generation was unavailable", error);
+  }
+  const renderableSlides = finalizeSlidesForRender(slides, [...project.assets, ...generatedAssets]);
+  const saved = await saveSlides(presentationId, renderableSlides, "Generated slide deck", generatedAssets);
   return NextResponse.json({ data: saved, meta: { requestId: crypto.randomUUID() } });
 }

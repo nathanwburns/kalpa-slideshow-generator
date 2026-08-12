@@ -15,6 +15,7 @@ import type {
 import { outlineItemSchema, questionSchema, slideContentSchema, themeConceptSchema } from "@/lib/schema";
 import { finalizeSlidesForRender, isImageAsset } from "@/lib/slides/normalize";
 import { clipText } from "@/lib/utils";
+import { createId, ensureProjectFilesDir } from "@/lib/data/storage";
 
 function composeAssetContext(assets: AssetRecord[]) {
   return assets
@@ -251,6 +252,64 @@ export async function generateSlides(
 
   const parsed = await parseStructuredJson(response, z.object({ slides: z.array(slideContentSchema) }));
   return finalizeSlidesForRender(parsed.slides as SlideContent[], assets);
+}
+
+export async function generatePresentationVisuals(input: {
+  projectId: string;
+  brief: BriefInput;
+  slides: SlideContent[];
+  assets: AssetRecord[];
+  settings: AdminSettings;
+}) {
+  // Preserve supplied artwork. AI visuals fill the gap only when a project has no usable imagery.
+  if (input.assets.some((asset) => isImageAsset(asset))) return [] as AssetRecord[];
+
+  const candidates = input.slides
+    .filter((slide) => ["hero", "challenge", "industry-grid", "proof", "cta"].includes(slide.layoutKind))
+    .slice(0, 2);
+  if (!candidates.length) return [] as AssetRecord[];
+
+  const client = getOpenAIClient();
+  const directory = await ensureProjectFilesDir(input.projectId);
+  const visuals: AssetRecord[] = [];
+
+  for (const [index, slide] of candidates.entries()) {
+    const response = await client.images.generate({
+      model: process.env.OPENAI_IMAGE_MODEL || "gpt-image-1",
+      size: "1536x1024",
+      quality: "medium",
+      output_format: "png",
+      n: 1,
+      prompt: [
+        "Create a premium editorial visual for a Kalpa executive business presentation.",
+        `Topic: ${slide.headline}.`,
+        `Presentation brief: ${clipText(input.brief.rawPrompt, 460)}.`,
+        "Show a believable operations, finance, manufacturing, distribution, or leadership context appropriate to the topic.",
+        "Refined architectural composition, calm natural light, clear focal point, purposeful negative space for adjacent slide copy.",
+        "Do not include typography, letters, logos, watermarks, dashboards, browser windows, or collage panels.",
+        input.settings.imageGuidance
+      ].join(" ")
+    });
+    const image = response.data?.[0]?.b64_json;
+    if (!image) continue;
+
+    const assetId = createId("asset");
+    const name = `kalpa-visual-${String(index + 1).padStart(2, "0")}.png`;
+    const relativePath = path.join("uploads", input.projectId, `${assetId}.png`);
+    const buffer = Buffer.from(image, "base64");
+    await fs.writeFile(path.join(directory, `${assetId}.png`), buffer);
+    visuals.push({
+      id: assetId,
+      name,
+      mimeType: "image/png",
+      size: buffer.length,
+      path: relativePath,
+      extractedText: "AI-generated visual for this presentation.",
+      createdAt: new Date().toISOString()
+    });
+  }
+
+  return visuals;
 }
 
 export async function editOutline(

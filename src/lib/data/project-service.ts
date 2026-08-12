@@ -122,8 +122,9 @@ export async function saveOutline(
   return saveProject(project);
 }
 
-export async function saveSlides(projectId: string, slides: SlideContent[], label: string) {
+export async function saveSlides(projectId: string, slides: SlideContent[], label: string, generatedAssets: AssetRecord[] = []) {
   const project = await getProject(projectId);
+  project.assets.push(...generatedAssets);
   project.slides = slides;
   project.status = project.slides.length ? "generated" : project.status;
   stampRevision(project, label);

@@ -94,7 +94,7 @@ export function SlidePreview({ projectId, slide, assets, templateFamily, classNa
         if (element.kind === "image") {
           const url = element.assetId
             ? `/api/v1/projects/${projectId}/assets/${element.assetId}`
-            : "";
+            : element.src;
           return (
             <div
               key={element.id}
