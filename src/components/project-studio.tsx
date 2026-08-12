@@ -305,13 +305,13 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
       ? "fixed inset-0 z-50 flex items-center justify-center bg-slate-950/92 px-6 py-8 backdrop-blur-sm"
       : "";
     const stageClassName = expanded
-      ? "relative w-full max-w-[min(94vw,1720px)]"
+      ? "relative w-[min(94vw,calc((100vh-7rem)*16/9))]"
       : "relative rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#f6f7f8,#eef2f5)] p-4";
-    const previewClassName = expanded ? "w-full rounded-[28px]" : "";
+    const previewClassName = expanded ? "w-full rounded-[20px] ring-1 ring-white/35 shadow-[0_22px_55px_rgba(0,0,0,0.38)]" : "";
     const navButtonClassName = expanded
       ? "absolute top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/96 px-5 py-4 text-lg font-semibold text-slate-900 shadow-xl ring-1 ring-slate-200"
       : "absolute top-1/2 -translate-y-1/2 rounded-full bg-white/95 px-4 py-3 text-sm font-semibold text-slate-900 shadow-lg ring-1 ring-slate-200";
-    const utilityButtonClassName = "rounded-full bg-white/95 px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg ring-1 ring-slate-200 transition hover:bg-white";
+    const utilityButtonClassName = "rounded-full bg-[#F26E57] px-4 py-2 text-sm font-semibold text-white shadow-lg ring-1 ring-[#ffb1a2]/70 transition hover:bg-[#df5944]";
 
     return (
       <div
@@ -328,7 +328,7 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
                 <div className="h-1 w-1 rounded-full bg-white/40" />
                 <div className="text-sm font-bold">Slide {activeSlideIndex + 1} of {project.slides.length}</div>
               </div>
-              <button aria-label="Minimize slide preview" className="fixed right-7 top-7 z-[60] inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-slate-950 shadow-2xl ring-1 ring-slate-200 transition hover:bg-slate-100" onClick={() => setFullscreenPreview(false)} type="button">
+              <button aria-label="Minimize slide preview" className="fixed right-7 top-7 z-[60] inline-flex items-center gap-2 rounded-full bg-[#F26E57] px-5 py-3 text-sm font-bold text-white shadow-2xl ring-1 ring-[#ffb1a2]/70 transition hover:bg-[#df5944]" onClick={() => setFullscreenPreview(false)} type="button">
                 <span aria-hidden="true" className="text-lg leading-none">↙</span>
                 Minimize
               </button>
