@@ -150,7 +150,29 @@ describe("schema validation", () => {
       quote: "", quoteAttribution: "", ctaText: "", ctaSubtext: "", contactLine: "", imageAssetIds: [], notes: ""
     }, "strategic-frameworks", []);
 
-    expect(resolved.elements.find((element) => element.id === "pillar-0")).toMatchObject({ kind: "shape", h: 0.25, radius: 0.14, shadow: true, fillTransparency: 18 });
+    expect(resolved.elements.find((element) => element.id === "pillar-0")).toMatchObject({ kind: "shape", x: 0.06, y: 0.505, w: 0.285, h: 0.31, radius: 0.14, shadow: true, fillTransparency: 18 });
     expect(resolved.elements.find((element) => element.id === "pillar-0-glint")).toMatchObject({ kind: "shape", solidFill: "#FFFFFF" });
+  });
+
+  it("uses a shared inset and readable type for crystal-gel comparison panels", () => {
+    const resolved = resolveSlide({
+      id: "slide_compare",
+      sequence: 1,
+      purpose: "Contrast the current state with a future operating model.",
+      layoutKind: "comparison",
+      eyebrow: "Executive view",
+      headline: "Today vs. what good looks like",
+      subheadline: "A clear operating model improves confidence and pace.",
+      bullets: [], stats: [], steps: [],
+      leftColumnTitle: "Today",
+      leftColumnPoints: ["Reactive work and manual workarounds"],
+      rightColumnTitle: "What good looks like",
+      rightColumnPoints: ["Shared information and accountable execution"],
+      quote: "", quoteAttribution: "", ctaText: "", ctaSubtext: "", contactLine: "", imageAssetIds: [], notes: ""
+    }, "human-centered-sales", []).elements;
+
+    expect(resolved.find((element) => element.id === "today-panel")).toMatchObject({ kind: "shape", y: 0.505, h: 0.34 });
+    expect(resolved.find((element) => element.id === "today-heading")).toMatchObject({ kind: "text", x: 0.11, y: 0.6, fontSize: 17 });
+    expect(resolved.find((element) => element.id === "today-point-0")).toMatchObject({ kind: "text", x: 0.11, y: 0.665, fontSize: 13 });
   });
 });

@@ -77,8 +77,7 @@ export function SlidePreview({ projectId, slide, assets, templateFamily, classNa
               style={{
                 ...common,
                 color: element.color,
-                // A 13.333in PowerPoint slide maps to 1280px at 96dpi. Container
-                // units keep preview typography proportional at every carousel size.
+                // Container units keep preview typography proportional at every carousel size.
                 fontSize: `${element.fontSize / 9.6}cqw`,
                 fontWeight: element.fontWeight || 400,
                 fontFamily: element.fontFace || resolved.family.fontBody,

@@ -93,4 +93,4 @@ Reusable information surfaces use the Kalpa crystal-gel treatment inspired by th
 - Light surfaces: pale blue glass with enough opacity for readable navy copy.
 - Dark surfaces: translucent cyan gel with a high-contrast white edge and glint.
 - Keep the treatment for information containers, not every decorative element.
-- Export the gel as editable layered PowerPoint shapes. Browser blur is decorative only; the tint, highlight, edge, and shadow are all preserved in the PPTX.
+- Export the gel as editable layered Google Slides shapes. Browser blur is decorative only; the tint, highlight, edge, and shadow are represented with compatible native primitives.

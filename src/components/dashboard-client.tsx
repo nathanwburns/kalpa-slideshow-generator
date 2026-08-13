@@ -90,11 +90,11 @@ export function DashboardClient({ projects }: { projects: ProjectRecord[] }) {
             </div>
           </div>
           <h1 className="max-w-3xl text-4xl font-extrabold tracking-tight">
-            Build real Kalpa decks with live AI generation and editable PowerPoint export.
+            Build real Kalpa decks with live AI generation and editable Google Slides export.
           </h1>
           <p className="mt-4 max-w-2xl text-sm text-white/78">
             This build is optimized first for Kalpa sales and proposal workflows: brief, context uploads, outline generation,
-            deck composition, slide-level editing, and PPTX export.
+            deck composition, slide-level editing, and native Google Slides export.
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
             {["Brand-book guided AI", "Reference deck restyling", "Framed Kalpa layouts"].map((label) => (

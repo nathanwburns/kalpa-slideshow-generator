@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Kalpa Slideshow Generator Tool",
-  description: "Generate Kalpa-branded business decks with OpenAI and export editable PowerPoint files."
+  description: "Generate Kalpa-branded business decks with OpenAI and export editable Google Slides."
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

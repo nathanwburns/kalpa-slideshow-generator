@@ -156,6 +156,10 @@ function addCrystalGelCard(elements: RenderElement[], id: string, x: number, y: 
   });
 }
 
+// Content is deliberately placed in independent text boxes. This keeps the card
+// padding identical in the browser preview and in editable slide exports.
+const cardInset = 0.035;
+
 function addEditorialList(elements: RenderElement[], items: string[], treatment: Treatment, x: number, y: number, width: number) {
   items.slice(0, 4).forEach((item, index) => {
     const rowY = y + index * 0.075;
@@ -209,11 +213,11 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
     addHeader(elements, slide, family, treatment, { width: 0.62, y: 0.23, size: 29, subtitleY: 0.42 });
     const cards = slide.bullets.slice(0, 3);
     cards.forEach((item, index) => {
-      const x = 0.075 + index * 0.285;
-      addCrystalGelCard(elements, `pillar-${index}`, x, 0.53, 0.24, 0.25, treatment);
-      elements.push({ kind: "shape", id: `pillar-signal-${index}`, x: x + 0.025, y: 0.575, w: 0.026, h: 0.026, fill: index === 1 ? treatment.coral : treatment.primary, solidFill: index === 1 ? treatment.coral : treatment.primary, rotate: 45 });
-      elements.push({ kind: "text", id: `pillar-number-${index}`, x: x + 0.065, y: 0.575, w: 0.13, h: 0.025, text: `0${index + 1}`, fontSize: 9, fontWeight: 800, color: treatment.muted });
-      elements.push({ kind: "text", id: `pillar-copy-${index}`, x: x + 0.025, y: 0.635, w: 0.19, h: 0.1, text: item, fontSize: fitFont(item, 13, 11, 36), fontWeight: 700, color: treatment.ink });
+      const x = 0.06 + index * 0.315;
+      addCrystalGelCard(elements, `pillar-${index}`, x, 0.505, 0.285, 0.31, treatment);
+      elements.push({ kind: "shape", id: `pillar-signal-${index}`, x: x + cardInset, y: 0.555, w: 0.028, h: 0.028, fill: index === 1 ? treatment.coral : treatment.primary, solidFill: index === 1 ? treatment.coral : treatment.primary, rotate: 45 });
+      elements.push({ kind: "text", id: `pillar-number-${index}`, x: x + 0.078, y: 0.553, w: 0.13, h: 0.03, text: `0${index + 1}`, fontSize: 10, fontWeight: 800, color: treatment.muted });
+      elements.push({ kind: "text", id: `pillar-copy-${index}`, x: x + cardInset, y: 0.635, w: 0.215, h: 0.12, text: item, fontSize: fitFont(item, 16, 12, 38), fontWeight: 700, color: treatment.ink });
     });
   }
 
@@ -260,10 +264,10 @@ export function resolveSlide(sourceSlide: SlideContent, familyId: TemplateFamily
     [[0.075, slide.leftColumnTitle, slide.leftColumnPoints, "today", "#FFFFFF"], [0.52, slide.rightColumnTitle, slide.rightColumnPoints, "future", treatment.card]].forEach(([rawX, heading, points, id, fill]) => {
       const x = rawX as number;
       const list = points as string[];
-      addCrystalGelCard(elements, `${id}-panel`, x, 0.53, 0.35, 0.31, treatment, 0.12);
-      elements.push({ kind: "line", id: `${id}-rule`, x: x + 0.025, y: 0.59, w: 0.07, h: 0.003, color: id === "future" ? treatment.coral : treatment.primary, strokeWidth: 3 });
-      elements.push({ kind: "text", id: `${id}-heading`, x: x + 0.025, y: 0.625, w: 0.28, h: 0.035, text: heading as string, fontSize: 15, fontWeight: 800, color: treatment.ink });
-      list.slice(0, 4).forEach((item, index) => elements.push({ kind: "text", id: `${id}-point-${index}`, x: x + 0.025, y: 0.69 + index * 0.043, w: 0.29, h: 0.038, text: `• ${item}`, fontSize: fitFont(item, 11, 9, 32), color: treatment.ink }));
+      addCrystalGelCard(elements, `${id}-panel`, x, 0.505, 0.405, 0.34, treatment, 0.12);
+      elements.push({ kind: "line", id: `${id}-rule`, x: x + cardInset, y: 0.565, w: 0.08, h: 0.003, color: id === "future" ? treatment.coral : treatment.primary, strokeWidth: 3 });
+      elements.push({ kind: "text", id: `${id}-heading`, x: x + cardInset, y: 0.6, w: 0.32, h: 0.04, text: heading as string, fontSize: 17, fontWeight: 800, color: treatment.ink });
+      list.slice(0, 4).forEach((item, index) => elements.push({ kind: "text", id: `${id}-point-${index}`, x: x + cardInset, y: 0.665 + index * 0.052, w: 0.325, h: 0.045, text: `• ${item}`, fontSize: fitFont(item, 13, 10, 36), color: treatment.ink }));
     });
   }
 

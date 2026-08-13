@@ -189,6 +189,21 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
     }
   }
 
+  async function exportGoogleSlides() {
+    setBusy("google-slides");
+    setError(null);
+    try {
+      const response = await fetch(`/api/v1/presentations/${project.id}/export/google-slides`, { method: "POST" });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Google Slides export failed");
+      window.open(payload.data.url, "_blank", "noopener,noreferrer");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Google Slides export failed");
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function applyEdit(targetSlideId: string | null) {
     if (!editInstruction.trim()) return;
     setBusy("edit");
@@ -372,7 +387,7 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
             <h1 className="text-3xl font-extrabold text-slate-950">{project.title}</h1>
             <p className="mt-2 max-w-3xl text-sm text-slate-600">{project.description || "Real AI workflow for this project."}</p>
             <div className="mt-4 flex flex-wrap gap-2">
-              {["Kalpa brand book loaded", "Theme-directed generation", "Editable PPTX export"].map((label) => (
+              {["Kalpa brand book loaded", "Theme-directed generation", "Editable Google Slides export"].map((label) => (
                 <div key={label} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600">
                   {label}
                 </div>
@@ -381,9 +396,9 @@ export function ProjectStudio({ initialProject, settings }: { initialProject: Pr
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
-          <a className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700" href={`/api/v1/presentations/${project.id}/export/pptx`}>
-            Export PPTX
-          </a>
+          <button className="rounded-full bg-kalpa-peach px-4 py-2 text-sm font-semibold text-white disabled:opacity-60" onClick={exportGoogleSlides} disabled={busy !== null || !project.slides.length} type="button">
+            {busy === "google-slides" ? "Creating Google Slides…" : "Export to Google Slides"}
+          </button>
           <a className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700" href="/admin">
             Admin
           </a>
